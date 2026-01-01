@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package board.v1;
+
+option go_package = "github.com/Kredo15/task-board/protos/gen/go/board/v1";
+
+import "board.proto";
+
+
+message CreateBoardRequest {
+  string title = 1;
+  string description = 2;
+}
+
+message CreateBoardResponse {
+  Board board = 1;
+}
+
+message ListBoardsRequest {}
+
+message ListBoardsResponse {
+  repeated Board boards = 1;
+}
+
+message GetBoardRequest {
+  string board_id = 1;
+}
+
+message GetBoardResponse {
+  BoardView view = 1;
+}
+
+message UpdateBoardRequest {
+  string board_id = 1;
+  string title = 2;
+  string description = 3;
+}
+
+message UpdateBoardResponse {
+    Board board = 1;
+}
+
+message DeleteBoardRequest {
+  string board_id = 1;
+}
+
+message DeleteBoardResponse {}
+
+message CreateColumnRequest {
+  string board_id = 1;
+  string title = 2;
+  int32 position = 3;
+}
+
+message CreateColumnResponse {
+  Column column = 1;
+}
+
+message UpdateColumnRequest {
+  string column_id = 1;
+  string title = 2;
+  int32 position = 3;
+}
+
+message UpdateColumnResponse {
+    Column column = 1;
+}
+
+message DeleteColumnRequest {
+  string column_id = 1;
+}
+
+message DeleteColumnResponse {}
+
+message CreateTaskRequest {
+  string column_id = 1;
+  string title = 2;
+  string description = 3;
+  string assignee_id = 4;
+  int32 position = 5;
+}
+
+message CreateTaskResponse {
+  Task task = 1;
+}
+
+message UpdateTaskRequest {
+  string task_id = 1;
+  string title = 2;
+  string description = 3;
+  string assignee_id = 4;
+}
+
+message UpdateTaskResponse {
+  Task task = 1;
+}
+
+message MoveTaskRequest {
+  string task_id = 1;
+  string to_column_id = 2;
+  int32 to_position = 3;
+}
+
+message MoveTaskResponse {
+  Task task = 1;
+}
+
+message DeleteTaskRequest {
+  string task_id = 1;
+}
+
+message DeleteTaskResponse {}
+
+service BoardService {
+    rpc CreateBoard(CreateBoardRequest) returns (CreateBoardResponse);
+    rpc ListBoards(ListBoardsRequest) returns (ListBoardsResponse);
+    rpc GetBoard(GetBoardRequest) returns (GetBoardResponse);
+    rpc UpdateBoard(UpdateBoardRequest) returns (UpdateBoardResponse);
+    rpc DeleteBoard(DeleteBoardRequest) returns (DeleteBoardResponse);
+
+    rpc CreateColumn(CreateColumnRequest) returns (CreateColumnResponse);
+    rpc UpdateColumn(UpdateColumnRequest) returns (UpdateColumnResponse);
+    rpc DeleteColumn(DeleteColumnRequest) returns (DeleteColumnResponse);
+
+    rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
+    rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse);
+    rpc MoveTask(MoveTaskRequest) returns (MoveTaskResponse);
+    rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse);
+}

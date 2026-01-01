@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package board.v1;
+
+option go_package = "github.com/Kredo15/task-board/protos/gen/go/board/v1";
+
+import "google/protobuf/timestamp.proto";
+
+message Task {
+  string id = 1;
+  string column_id = 2;
+  string title = 3;
+  string description = 4;
+  int32 position = 5;
+  string assignee_id = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message Column {
+  string id = 1;
+  string board_id = 2;
+  string title = 3;
+  int32 position = 4;
+  repeated Task tasks = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+
+message Board {
+    string id = 1;
+    string title = 2;
+    string description = 3;
+    string owner_id = 4;
+    repeated Column columns = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
+}
+
+
+message ColumnView {
+  Column column = 1;
+  repeated Task tasks = 2;
+}
+
+message BoardView {
+  Board board = 1;
+  repeated ColumnView columns = 2;
+}
