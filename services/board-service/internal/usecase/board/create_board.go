@@ -53,10 +53,11 @@ func (h *createBoardUseCase) Execute(ctx context.Context, cmd *CreateBoardReques
 
 	// Возвращаем успешный ответ
 	response := &CreateBoardResponse{
-		ID:        newBoard.ID(),
-		Title:     newBoard.Title(),
-		OwnerID:   newBoard.OwnerID(),
-		CreatedAt: newBoard.CreatedAt(),
+		ID:          newBoard.ID(),
+		Title:       newBoard.Title(),
+		Description: newBoard.Description(),
+		OwnerID:     newBoard.OwnerID(),
+		CreatedAt:   newBoard.CreatedAt(),
 	}
 
 	return response, nil

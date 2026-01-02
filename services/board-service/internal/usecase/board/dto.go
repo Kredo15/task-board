@@ -10,8 +10,9 @@ type CreateBoardRequest struct {
 }
 
 type CreateBoardResponse struct {
-	ID        string    `json:"id"`
-	Title     string    `json:"title"`
-	OwnerID   string    `json:"owner_id"`
-	CreatedAt time.Time `json:"created_at"`
+	ID          string    `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	OwnerID     string    `json:"owner_id"`
+	CreatedAt   time.Time `json:"created_at"`
 }

@@ -1,0 +1,26 @@
+server:
+  Host: "localhost"
+  Port: 8080
+  ReadTimeout: 5
+  WriteTimeout: 5
+
+logging:
+  Level: "info"
+
+postgres:
+  Host: "localhost"
+  Port: 5432
+  User: "postgres"
+  Password: "postgres"
+  DBname: "taskboard"
+  DB_MAX_CONNS: 20
+  DB_MIN_CONNS: 5
+  DB_MAX_CONN_LIFETIME: 30m
+  DB_MAX_CONN_IDLE_TIME: 5m
+  DB_HEALTH_CHECK_PERIOD: 1m
+
+redis:
+  Host: "localhost"
+  Port: 6379
+  Password: ""
+  DB: 0
