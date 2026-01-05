@@ -21,7 +21,7 @@ type BoardHandler struct {
 	log      logger.Logger
 }
 
-func NewBoardHandler(bUC usecase.CreateBoardUseCase) *BoardHandler {
+func NewBoardHandler(bUC usecase.CreateBoardUseCase, valid *validator.Validator, log logger.Logger) *BoardHandler {
 	return &BoardHandler{
 		boardUsecase: bUC,
 	}
@@ -45,12 +45,13 @@ func (h *BoardHandler) CreateBoard(
 	}
 
 	if err := h.validate.Struct(boardDTO); err != nil {
+		h.log.Error("invalid input", err)
 		return nil, status.Errorf(codes.InvalidArgument, "invalid input: %v", err)
 	}
 
 	createdBoard, err := h.boardUsecase.Execute(ctx, &boardDTO)
 	if err != nil {
-		h.log.Error("CreateBoard usecase error", err)
+		h.log.Error("createBoard usecase error", err)
 		return nil, convertDomainErrorToGRPC(err)
 	}
 

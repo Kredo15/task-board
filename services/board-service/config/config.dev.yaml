@@ -1,8 +1,8 @@
 server:
-  Host: "localhost"
-  Port: 8080
-  ReadTimeout: 5
-  WriteTimeout: 5
+
+grpc:
+  port: 50051
+  timeout: 4s
 
 logging:
   Level: "info"

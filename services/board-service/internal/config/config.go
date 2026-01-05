@@ -10,17 +10,19 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig
-	Postgres PostgresConfig
-	Redis    RedisConfig
-	Logging  LoggingConfig
+	GRPC     GRPCConfig     `yaml:"grpc"`
+	Postgres PostgresConfig `yaml:"postgres"`
+	Redis    RedisConfig    `yaml:"redis"`
+	Logging  LoggingConfig  `yaml:"logging"`
 }
 
-type ServerConfig struct {
-	Host         string        `yaml:"Host"`
-	Port         int           `yaml:"Port"`
-	ReadTimeout  time.Duration `yaml:"ReadTimeout"`
-	WriteTimeout time.Duration `yaml:"WriteTimeout"`
+type GRPCConfig struct {
+	Port    int           `yaml:"port" env:"GRPC_PORT" env-default:"50051"`
+	Timeout time.Duration `yaml:"timeout" env-default:"4s"`
+}
+
+func (g GRPCConfig) Address() string {
+	return fmt.Sprintf(":%d", g.Port)
 }
 
 type PostgresConfig struct {
