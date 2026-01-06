@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "github.com/Kredo15/task-board/protos/gen/go/auth/v1";
+
+import "google/protobuf/timestamp.proto";
+
+message RegisterRequest {
+  string email = 1; // Email of the user to register.
+  string username = 2;
+  string password = 3; // Password of the user to register.
+  
+}
+
+message RegisterResponse {
+  string user_id = 1; // User ID of the registered user.
+}
+
+message LoginRequest {
+  string email = 1; // Email of the user to login.
+  string password = 2; // Password of the user to login.
+}
+
+message LoginResponse {
+  string access_token = 1; // Auth token of the logged in user.
+  string refresh_token = 2;
+}
+
+message GetUserInfoRequest {
+  string user_id = 1;
+}
+
+message GetUserInfoResponse {
+  string email = 1;
+  string username = 2;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message ResetPasswordRequest {
+  string old_password = 2;
+  string new_password = 3;
+}
+
+message ResetPasswordResponse {}
+
+message LogoutRequest {
+  string token = 1; // Auth token of the user to logout.
+}
+
+message LogoutResponse {}
+// Auth servirce
+service Auth {
+  // Register registers a new user.
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  // Login logs in a user and returns an auth token.
+  rpc Login (LoginRequest) returns (LoginResponse);
+  // GetUserInfo info about user for notificate
+  rpc GetUserInfo (GetUserInfoRequest) returns (GetUserInfoResponse);
+  // RefreshToken generate new tokens
+  rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
+  // ResetPassword change password
+  rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
+  // Logout close session
+  rpc Logout (LogoutRequest) returns (LogoutResponse);
+}
