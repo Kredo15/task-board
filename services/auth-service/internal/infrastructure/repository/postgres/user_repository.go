@@ -22,11 +22,11 @@ func (r *UserRepository) Create(ctx context.Context, user *domain.User) error {
 	          VALUES ($1, $2, $3, $4, $5)`
 
 	_, err := r.db.Exec(ctx, query,
-		user.ID,
-		user.Email,
-		user.Username,
-		user.PasswordHash,
-		user.CreatedAt,
+		user.ID(),
+		user.Email(),
+		user.Username(),
+		user.Password(),
+		user.CreatedAt(),
 	)
 	return err
 }
@@ -50,7 +50,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email domain.Email) (*d
 		return nil, err
 	}
 
-	return m.toDomain(), nil
+	return domain.RestoreUser(m.ID, m.Email, m.Username, m.PasswordHash, m.CreatedAt), nil
 }
 
 func (r *UserRepository) GetByID(ctx context.Context, id domain.UserdID) (*domain.User, error) {
@@ -72,7 +72,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id domain.UserdID) (*domai
 		return nil, err
 	}
 
-	return m.toDomain(), nil
+	return domain.RestoreUser(m.ID, m.Email, m.Username, m.PasswordHash, m.CreatedAt), nil
 }
 
 func (r *UserRepository) ExistsByEmail(ctx context.Context, email domain.Email) (bool, error) {

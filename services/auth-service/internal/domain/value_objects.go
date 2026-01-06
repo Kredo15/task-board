@@ -2,21 +2,27 @@ package domain
 
 import (
 	"net/mail"
+	"strings"
 )
-
-type UserdID string
 
 type IDGenerator interface {
 	Generate() string
 }
 
+type UserdID string
+
+func NewUserID(id string) UserdID {
+	return UserdID(id)
+}
+
 type Email string
 
-func NewEmail(v string) (Email, error) {
-	if _, err := mail.ParseAddress(v); err != nil {
+func NewEmail(email string) (Email, error) {
+	email = strings.TrimSpace(strings.ToLower(email))
+	if _, err := mail.ParseAddress(email); err != nil {
 		return "", ErrInvalidEmail
 	}
-	return Email(v), nil
+	return Email(email), nil
 }
 
 type PasswordHash string
