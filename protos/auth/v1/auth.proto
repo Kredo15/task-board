@@ -4,8 +4,6 @@ package auth.v1;
 
 option go_package = "github.com/Kredo15/task-board/protos/gen/go/auth/v1";
 
-import "google/protobuf/timestamp.proto";
-
 message RegisterRequest {
   string email = 1; // Email of the user to register.
   string username = 2;
@@ -14,6 +12,8 @@ message RegisterRequest {
 
 message RegisterResponse {
   string user_id = 1; // User ID of the registered user.
+  string access_token = 2; // Auth token of the logged in user.
+  string refresh_token = 3;
 }
 
 message LoginRequest {
@@ -49,7 +49,10 @@ message ResetPasswordRequest {
   string new_password = 3;
 }
 
-message ResetPasswordResponse {}
+message ResetPasswordResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
 
 message LogoutRequest {
   string token = 1; // Auth token of the user to logout.

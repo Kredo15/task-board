@@ -23,12 +23,18 @@ type RefreshRequest struct {
 }
 
 type ResetPasswordRequest struct {
-	ID          string `json:"id"`
+	UserID      string `json:"user_id"`
 	OldPassword string `json:"old_password"`
 	NewPassword string `json:"new_password"`
 }
 
 // --- Исходящие данные (Responses) ---
+
+type RegesterResponse struct {
+	UserID       string `json:"user_id"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
 
 // AuthResponse возвращается при успешном логине
 type AuthResponse struct {
@@ -39,7 +45,7 @@ type AuthResponse struct {
 
 // UserResponse возвращает информацию о пользователе без чувствительных данных
 type UserResponse struct {
-	ID       string `json:"id"`
+	UserID   string `json:"user_id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
 }

@@ -6,7 +6,7 @@ import (
 
 func MapUserToResponse(u *domain.User) *UserResponse {
 	return &UserResponse{
-		ID:       u.ID(),
+		UserID:   u.ID(),
 		Email:    u.Email(),
 		Username: u.Username(),
 	}

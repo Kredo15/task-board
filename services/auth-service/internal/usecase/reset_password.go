@@ -32,7 +32,7 @@ func NewResetUseCase(
 func (rUC *ResetUseCase) Execute(ctx context.Context, dto *ResetPasswordRequest) (*AuthResponse, error) {
 	// логика смены пароля в БД
 	// Ищем пользователя
-	userID := domain.NewUserID(dto.ID)
+	userID := domain.NewUserID(dto.UserID)
 	user, err := rUC.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		return nil, domain.ErrUserNotFound

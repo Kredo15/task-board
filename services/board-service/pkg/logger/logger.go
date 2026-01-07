@@ -6,8 +6,6 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog"
-
-	"github.com/Kredo15/task-board/services/board-service/internal/config"
 )
 
 type Interface interface {
@@ -19,13 +17,12 @@ type Interface interface {
 }
 
 type Logger struct {
-	cfg    *config.Config
 	logger zerolog.Logger
 }
 
-func NewLogger(cfg *config.Config) Logger {
+func NewLogger(level string) Logger {
 
-	switch strings.ToLower(cfg.Logging.Level) {
+	switch strings.ToLower(level) {
 	case "debug":
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	case "warn":
@@ -41,7 +38,6 @@ func NewLogger(cfg *config.Config) Logger {
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
 	return Logger{
-		cfg:    cfg,
 		logger: logger,
 	}
 }
