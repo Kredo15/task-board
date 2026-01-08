@@ -23,14 +23,14 @@ type RefreshRequest struct {
 }
 
 type ResetPasswordRequest struct {
-	UserID      string `json:"user_id"`
-	OldPassword string `json:"old_password"`
-	NewPassword string `json:"new_password"`
+	UserID      string `json:"user_id" validate:"required"`
+	OldPassword string `json:"old_password" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required"`
 }
 
 // --- Исходящие данные (Responses) ---
 
-type RegesterResponse struct {
+type RegisterResponse struct {
 	UserID       string `json:"user_id"`
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`

@@ -7,10 +7,10 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email Email) (*User, error)
 	GetByID(ctx context.Context, id UserdID) (*User, error)
 	ExistsByEmail(ctx context.Context, email Email) (bool, error)
-	UpdatePassword(ctx context.Context, passHash PasswordHash) error
+	UpdatePassword(ctx context.Context, id UserdID, passHash PasswordHash) error
 }
 
-type RefreshTokenRepository interface {
+type TokenRepository interface {
 	// Save сохраняет новый токен или обновляет существующий
 	Save(ctx context.Context, token *RefreshToken) error
 

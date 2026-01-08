@@ -5,20 +5,24 @@ import (
 	"time"
 
 	"github.com/Kredo15/task-board/services/auth-service/internal/domain"
+	"github.com/Kredo15/task-board/services/auth-service/pkg/logger"
 )
 
 type RefreshUseCase struct {
-	tokenRepo domain.RefreshTokenRepository
+	tokenRepo domain.TokenRepository
 	tokens    TokenManager
+	logger    logger.Logger
 }
 
 func NewRefreshUseCase(
-	tr domain.RefreshTokenRepository,
+	tr domain.TokenRepository,
 	tm TokenManager,
+	l logger.Logger,
 ) *RefreshUseCase {
 	return &RefreshUseCase{
 		tokenRepo: tr,
 		tokens:    tm,
+		logger:    l,
 	}
 }
 

@@ -6,26 +6,30 @@ import (
 	"time"
 
 	"github.com/Kredo15/task-board/services/auth-service/internal/domain"
+	"github.com/Kredo15/task-board/services/auth-service/pkg/logger"
 )
 
 type ResetUseCase struct {
 	userRepo  domain.UserRepository
-	tokenRepo domain.RefreshTokenRepository
+	tokenRepo domain.TokenRepository
 	hasher    PasswordHasher
 	tokens    TokenManager
+	log       logger.Logger
 }
 
 func NewResetUseCase(
 	ur domain.UserRepository,
-	tr domain.RefreshTokenRepository,
+	tr domain.TokenRepository,
 	ph PasswordHasher,
 	tm TokenManager,
+	l logger.Logger,
 ) *ResetUseCase {
 	return &ResetUseCase{
 		userRepo:  ur,
 		tokenRepo: tr,
 		hasher:    ph,
 		tokens:    tm,
+		log:       l,
 	}
 }
 

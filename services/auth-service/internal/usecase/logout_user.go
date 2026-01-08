@@ -4,17 +4,21 @@ import (
 	"context"
 
 	"github.com/Kredo15/task-board/services/auth-service/internal/domain"
+	"github.com/Kredo15/task-board/services/auth-service/pkg/logger"
 )
 
 type LogoutUseCase struct {
-	tokenRepo domain.RefreshTokenRepository
+	tokenRepo domain.TokenRepository
+	logger    logger.Logger
 }
 
 func NewLogoutUseCase(
-	tr domain.RefreshTokenRepository,
+	tr domain.TokenRepository,
+	l logger.Logger,
 ) *LogoutUseCase {
 	return &LogoutUseCase{
 		tokenRepo: tr,
+		logger:    l,
 	}
 }
 

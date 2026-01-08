@@ -11,7 +11,7 @@ import (
 
 type LoginUseCase struct {
 	userRepo  domain.UserRepository
-	tokenRepo domain.RefreshTokenRepository
+	tokenRepo domain.TokenRepository
 	hasher    PasswordHasher
 	tokens    TokenManager
 	logger    logger.Logger
@@ -19,7 +19,7 @@ type LoginUseCase struct {
 
 func NewLoginUseCase(
 	ur domain.UserRepository,
-	tr domain.RefreshTokenRepository,
+	tr domain.TokenRepository,
 	ph PasswordHasher,
 	tm TokenManager,
 	log logger.Logger,

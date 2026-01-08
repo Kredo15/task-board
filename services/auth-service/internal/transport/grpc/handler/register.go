@@ -16,9 +16,9 @@ func (h *Handler) Register(ctx context.Context, req *authv1.RegisterRequest) (*a
 		Password: req.GetPassword(),
 	}
 
-	regUC, err := h.deps.RegisterUC.Execute(ctx, &regDTO)
+	regUC, err := h.registerUC.Execute(ctx, &regDTO)
 	if err != nil {
-		h.deps.Logger.Error("failed to register user", err)
+		h.log.Error("failed to register user", err)
 		return nil, mapError(err)
 	}
 

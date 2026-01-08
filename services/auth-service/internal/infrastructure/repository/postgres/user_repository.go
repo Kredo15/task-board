@@ -85,3 +85,9 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email domain.Email) 
 	}
 	return exists, nil
 }
+
+func (r *UserRepository) UpdatePassword(ctx context.Context, id domain.UserdID, passHash domain.PasswordHash) error {
+	query := `UPDATE users SET password_hash = $1 WHERE id = $2`
+	_, err := r.db.Exec(ctx, query, passHash, id)
+	return err
+}

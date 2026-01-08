@@ -11,7 +11,7 @@ import (
 
 type RegisterUseCase struct {
 	userRepo  domain.UserRepository
-	tokenRepo domain.RefreshTokenRepository
+	tokenRepo domain.TokenRepository
 	hasher    PasswordHasher
 	tokens    TokenManager
 	gen       domain.IDGenerator
@@ -20,7 +20,7 @@ type RegisterUseCase struct {
 
 func NewRegisterUseCase(
 	ur domain.UserRepository,
-	tr domain.RefreshTokenRepository,
+	tr domain.TokenRepository,
 	ph PasswordHasher,
 	tm TokenManager,
 	g domain.IDGenerator,
@@ -37,7 +37,7 @@ func NewRegisterUseCase(
 }
 
 // Register — сценарий регистрации
-func (rUC *RegisterUseCase) Execute(ctx context.Context, dto *RegisterRequest) (*RegesterResponse, error) {
+func (rUC *RegisterUseCase) Execute(ctx context.Context, dto *RegisterRequest) (*RegisterResponse, error) {
 
 	rUC.logger.Info("attempting to register new user")
 
@@ -91,7 +91,7 @@ func (rUC *RegisterUseCase) Execute(ctx context.Context, dto *RegisterRequest) (
 		return nil, err
 	}
 
-	return &RegesterResponse{
+	return &RegisterResponse{
 		UserID:       user.ID(),
 		AccessToken:  access,
 		RefreshToken: refresh,

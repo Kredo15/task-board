@@ -15,7 +15,7 @@ func (h *Handler) Login(ctx context.Context, req *authv1.LoginRequest) (*authv1.
 		Password: req.GetPassword(),
 	}
 	// Вызов Usecase
-	authUC, err := h.deps.LoginUC.Execute(ctx, &loginDTO)
+	authUC, err := h.loginUC.Execute(ctx, &loginDTO)
 	if err != nil {
 		return nil, mapError(err)
 	}

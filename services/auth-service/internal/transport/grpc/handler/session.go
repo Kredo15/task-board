@@ -16,7 +16,7 @@ func (h *Handler) Refresh(ctx context.Context, req *authv1.RefreshTokenRequest) 
 		RefreshToken: req.GetRefreshToken(),
 	}
 	// Вызов Usecase
-	authUC, err := h.deps.RefreshUC.Execute(ctx, &RefreshDTO)
+	authUC, err := h.refreshUC.Execute(ctx, &RefreshDTO)
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -34,7 +34,7 @@ func (h *Handler) Logout(ctx context.Context, req *authv1.LogoutRequest) (*authv
 		RefreshToken: req.GetToken(),
 	}
 	// Вызов Usecase
-	err := h.deps.LogoutUC.Execute(ctx, &RefreshDTO)
+	err := h.logoutUC.Execute(ctx, &RefreshDTO)
 	if err != nil {
 		return nil, mapError(err)
 	}
