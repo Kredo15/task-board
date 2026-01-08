@@ -24,7 +24,7 @@ func Run() error {
 		return fmt.Errorf("config parser error: %w", err)
 	}
 
-	log := loggerPkg.NewLogger(cfg)
+	log := loggerPkg.NewLogger(cfg.Logging.Level)
 
 	genID := uuid.NewGenerator()
 
