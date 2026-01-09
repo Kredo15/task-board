@@ -1,10 +1,14 @@
 package task
 
-import "time"
+import (
+	"time"
+
+	"github.com/Kredo15/task-board/services/board-service/internal/domain/column"
+)
 
 type Task struct {
 	id          TaskID
-	columnID    string
+	columnID    column.ColumnID
 	title       Title
 	description Description
 	position    Position
@@ -60,41 +64,41 @@ func RestoreTask(id, title, desc, assigneeID string, pos int, createdAt, updated
 	}
 }
 
-func (b *Task) ID() string { return string(b.id) }
+func (t *Task) ID() string { return string(t.id) }
 
-func (b *Task) Title() string { return string(b.title) }
+func (t *Task) Title() string { return string(t.title) }
 
-func (b *Task) Description() string { return string(b.description) }
+func (t *Task) Description() string { return string(t.description) }
 
-func (b *Task) AssigneeID() string { return string(b.assigneeID) }
+func (t *Task) AssigneeID() string { return string(t.assigneeID) }
 
-func (b *Task) CreatedAt() time.Time { return b.createdAt }
+func (t *Task) CreatedAt() time.Time { return t.createdAt }
 
-func (b *Task) UpdatedAt() time.Time { return b.updatedAt }
+func (t *Task) UpdatedAt() time.Time { return t.updatedAt }
 
-func (b *Task) UpdateTitle(newTitleRaw string) error {
+func (t *Task) UpdateTitle(newTitleRaw string) error {
 	title, err := NewTitle(newTitleRaw)
 	if err != nil {
 		return err
 	}
-	b.title = title
-	b.updatedAt = time.Now()
+	t.title = title
+	t.updatedAt = time.Now()
 	return nil
 }
 
-func (b *Task) UpdateDescription(newDescRaw string) error {
+func (t *Task) UpdateDescription(newDescRaw string) error {
 	desc, err := NewDescription(newDescRaw)
 	if err != nil {
 		return err
 	}
-	b.description = desc
-	b.updatedAt = time.Now()
+	t.description = desc
+	t.updatedAt = time.Now()
 	return nil
 }
 
-func (b *Task) Equals(other *Task) bool {
+func (t *Task) Equals(other *Task) bool {
 	if other == nil {
 		return false
 	}
-	return b.id == other.id
+	return t.id == other.id
 }

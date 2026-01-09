@@ -6,8 +6,11 @@ import (
 
 type TaskID string
 
-func NewTaskID(id string) TaskID {
-	return TaskID(id)
+func NewTaskID(id string) (TaskID, error) {
+	if id == "" {
+		return "", ErrInvalidTaskID
+	}
+	return TaskID(id), nil
 }
 
 type IDGenerator interface {

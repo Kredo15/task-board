@@ -7,5 +7,6 @@ import (
 type TaskRepository interface {
 	Create(ctx context.Context, task *Task) error
 	Update(ctx context.Context, task Task) error
+	Move(ctx context.Context, task Task) error
 	Delete(ctx context.Context, id TaskID) error
 }
