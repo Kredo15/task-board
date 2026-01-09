@@ -7,7 +7,6 @@ import (
 
 	authv1 "github.com/Kredo15/task-board/protos/gen/go/auth/v1"
 	handler "github.com/Kredo15/task-board/services/auth-service/internal/transport/grpc/handler"
-	usecase "github.com/Kredo15/task-board/services/auth-service/internal/usecase"
 	"github.com/Kredo15/task-board/services/auth-service/pkg/logger"
 	"github.com/Kredo15/task-board/services/auth-service/pkg/validator"
 )
@@ -23,11 +22,11 @@ func NewServer(
 	addr string,
 	l logger.Logger,
 	valid *validator.Validator,
-	regUC usecase.UserRegister,
-	loginUC usecase.UserLogin,
-	refreshUC usecase.TokenRefresher,
-	resetUC usecase.PasswordReseter,
-	logoutUC usecase.UserLogout,
+	regUC handler.UserRegister,
+	loginUC handler.UserLogin,
+	refreshUC handler.TokenRefresher,
+	resetUC handler.PasswordReseter,
+	logoutUC handler.UserLogout,
 ) *Server {
 	serv := grpc.NewServer()
 

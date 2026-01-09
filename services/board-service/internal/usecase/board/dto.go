@@ -9,10 +9,22 @@ type CreateBoardRequest struct {
 	OwnerID     string `json:"owner_id" validate:"required"`
 }
 
-type CreateBoardResponse struct {
+type GetBoardRequest struct {
+	ID string `json:"id" validate:"required"`
+}
+
+type GetBoardsRequest struct {
+	OwnerID string `json:"owner_id" validate:"required"`
+}
+
+type BoardResponse struct {
 	ID          string    `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	OwnerID     string    `json:"owner_id"`
 	CreatedAt   time.Time `json:"created_at"`
+}
+
+type GetBoardsResponse struct {
+	Boards []BoardResponse `json:"boards"`
 }

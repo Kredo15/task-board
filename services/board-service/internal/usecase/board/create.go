@@ -7,26 +7,22 @@ import (
 	"github.com/Kredo15/task-board/services/board-service/internal/domain/board"
 )
 
-type CreateBoardUseCase interface {
-	Execute(ctx context.Context, cmd *CreateBoardRequest) (*CreateBoardResponse, error)
-}
-
 // createBoardHandler представляет обработчик команды создания доски
-type createBoardUseCase struct {
+type CreateBoardUseCase struct {
 	repo board.BoardRepository
 	gen  board.IDGenerator
 }
 
 // NewCreateBoardHandler создает новый экземпляр обработчика команды создания доски
-func NewCreateBoardUseCase(r board.BoardRepository, g board.IDGenerator) CreateBoardUseCase {
-	return &createBoardUseCase{
+func NewCreateBoardUseCase(r board.BoardRepository, g board.IDGenerator) *CreateBoardUseCase {
+	return &CreateBoardUseCase{
 		repo: r,
 		gen:  g,
 	}
 }
 
 // Execute обрабатывает команду создания доски
-func (h *createBoardUseCase) Execute(ctx context.Context, cmd *CreateBoardRequest) (*CreateBoardResponse, error) {
+func (h *CreateBoardUseCase) Execute(ctx context.Context, cmd *CreateBoardRequest) (*BoardResponse, error) {
 	// Преобразование запроса в доменную модель
 
 	title := strings.TrimSpace(cmd.Title)
@@ -52,7 +48,7 @@ func (h *createBoardUseCase) Execute(ctx context.Context, cmd *CreateBoardReques
 	}
 
 	// Возвращаем успешный ответ
-	response := &CreateBoardResponse{
+	response := &BoardResponse{
 		ID:          newBoard.ID(),
 		Title:       newBoard.Title(),
 		Description: newBoard.Description(),

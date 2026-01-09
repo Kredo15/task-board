@@ -7,6 +7,10 @@ import (
 	"github.com/Kredo15/task-board/services/auth-service/internal/usecase"
 )
 
+type UserRegister interface {
+	Execute(ctx context.Context, req *usecase.RegisterRequest) (*usecase.RegisterResponse, error)
+}
+
 // Register — точка входа для регистрации
 func (h *Handler) Register(ctx context.Context, req *authv1.RegisterRequest) (*authv1.RegisterResponse, error) {
 	// Маппинг из Proto в usecase DTO

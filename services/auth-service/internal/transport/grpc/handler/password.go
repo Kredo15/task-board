@@ -10,6 +10,10 @@ import (
 	"github.com/Kredo15/task-board/services/auth-service/pkg/grpcutil"
 )
 
+type PasswordReseter interface {
+	Execute(ctx context.Context, req *usecase.ResetPasswordRequest) (*usecase.AuthResponse, error)
+}
+
 // ResetPassword — точка входа для обновления пароля
 func (h *Handler) ResetPassword(ctx context.Context, req *authv1.ResetPasswordRequest) (*authv1.ResetPasswordResponse, error) {
 

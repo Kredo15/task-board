@@ -6,6 +6,10 @@ import (
 
 type BoardID string
 
+func NewBoardID(id string) BoardID {
+	return BoardID(id)
+}
+
 type IDGenerator interface {
 	Generate() string
 }

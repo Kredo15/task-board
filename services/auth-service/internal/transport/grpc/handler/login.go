@@ -7,6 +7,10 @@ import (
 	"github.com/Kredo15/task-board/services/auth-service/internal/usecase"
 )
 
+type UserLogin interface {
+	Execute(ctx context.Context, req *usecase.LoginRequest) (*usecase.AuthResponse, error)
+}
+
 // Login — точка входа для аутентификации
 func (h *Handler) Login(ctx context.Context, req *authv1.LoginRequest) (*authv1.LoginResponse, error) {
 	// Маппинг из Proto в usecase DTO

@@ -7,17 +7,37 @@ import (
 	usecase "github.com/Kredo15/task-board/services/board-service/internal/usecase/board"
 )
 
-func mapDomainBoardToProto(b *usecase.CreateBoardResponse) *boardv1.Board {
+func mapDTOBoardToProto(b *usecase.BoardResponse) *boardv1.Board {
 	if b == nil {
 		return nil
 	}
 
 	return &boardv1.Board{
-		Id:          string(b.ID),
+		Id:          b.ID,
 		Title:       b.Title,
 		Description: b.Description,
 		OwnerId:     b.OwnerID,
 		CreatedAt:   timestamppb.New(b.CreatedAt),
-		// Columns будут добавлены позже
 	}
+}
+
+func mapDTOBoardViewToProto(b *usecase.BoardResponse) *boardv1.Board {
+	if b == nil {
+		return nil
+	}
+
+	board := &boardv1.Board{
+		Id:          b.ID,
+		Title:       b.Title,
+		Description: b.Description,
+		OwnerId:     b.OwnerID,
+		CreatedAt:   timestamppb.New(b.CreatedAt),
+		UpdatedAt:   timestamppb.New(b.CreatedAt),
+	}
+	columns := make([]*boardv1.ColumnView, 0)
+	boardView := &boardv1.BoardView{
+		Board:   board,
+		Columns: make([]*boardv1.ColumnView, 0), // Columns добавлю позже
+	}
+	return boardView
 }

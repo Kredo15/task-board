@@ -1,6 +1,12 @@
 package validator
 
-import "github.com/go-playground/validator/v10"
+import (
+	"errors"
+
+	"github.com/go-playground/validator/v10"
+)
+
+var ErrInvalidInputData = errors.New("invalid input data")
 
 type Validator struct {
 	validate *validator.Validate

@@ -2,7 +2,6 @@ package grpc
 
 import (
 	authv1 "github.com/Kredo15/task-board/protos/gen/go/auth/v1"
-	"github.com/Kredo15/task-board/services/auth-service/internal/usecase"
 	"github.com/Kredo15/task-board/services/auth-service/pkg/logger"
 	"github.com/Kredo15/task-board/services/auth-service/pkg/validator"
 )
@@ -12,21 +11,21 @@ type Handler struct {
 	authv1.UnimplementedAuthServer
 	log        logger.Logger
 	valid      *validator.Validator
-	registerUC usecase.UserRegister
-	loginUC    usecase.UserLogin
-	refreshUC  usecase.TokenRefresher
-	resetUC    usecase.PasswordReseter
-	logoutUC   usecase.UserLogout
+	registerUC UserRegister
+	loginUC    UserLogin
+	refreshUC  TokenRefresher
+	resetUC    PasswordReseter
+	logoutUC   UserLogout
 }
 
 func NewHandler(
 	l logger.Logger,
 	valid *validator.Validator,
-	regUC usecase.UserRegister,
-	loginUC usecase.UserLogin,
-	refreshUC usecase.TokenRefresher,
-	resetUC usecase.PasswordReseter,
-	logoutUC usecase.UserLogout,
+	regUC UserRegister,
+	loginUC UserLogin,
+	refreshUC TokenRefresher,
+	resetUC PasswordReseter,
+	logoutUC UserLogout,
 ) *Handler {
 	return &Handler{
 		log:        l,

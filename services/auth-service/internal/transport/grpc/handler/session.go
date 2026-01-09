@@ -9,6 +9,14 @@ import (
 	"github.com/Kredo15/task-board/services/auth-service/internal/usecase"
 )
 
+type TokenRefresher interface {
+	Execute(ctx context.Context, req *usecase.RefreshRequest) (*usecase.AuthResponse, error)
+}
+
+type UserLogout interface {
+	Execute(ctx context.Context, req *usecase.RefreshRequest) error
+}
+
 // Refresh — точка входа для обновления пары токенов
 func (h *Handler) Refresh(ctx context.Context, req *authv1.RefreshTokenRequest) (*authv1.RefreshTokenResponse, error) {
 	// Маппинг из Proto в usecase DTO
