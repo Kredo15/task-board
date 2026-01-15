@@ -21,10 +21,10 @@ type Title string
 
 func NewTitle(v string) (Title, error) {
 	if v == "" {
-		return "", ErrInvalidColumnTitleEmpty
+		return "", ErrInvalidTaskTitleEmpty
 	}
 	if utf8.RuneCountInString(v) > 100 {
-		return "", ErrInvalidColumnTitleLong
+		return "", ErrInvalidTaskTitleLong
 	}
 	return Title(v), nil
 }
@@ -33,18 +33,18 @@ type Description string
 
 func NewDescription(v string) (Description, error) {
 	if utf8.RuneCountInString(v) > 1000 {
-		return "", ErrInvaliColumnDescriptionLong
+		return "", ErrInvaliTaskDescriptionLong
 	}
 	return Description(v), nil
 }
 
-type Position int
+type Rank string
 
-func NewPosition(pos int) (Position, error) {
-	if pos < 0 {
-		return 0, ErrInvalidPosition
+func NewRank(r string) (Rank, error) {
+	if r == "" {
+		return "", ErrInvalidRank
 	}
-	return Position(pos), nil
+	return Rank(r), nil
 }
 
 type AssigneeID string

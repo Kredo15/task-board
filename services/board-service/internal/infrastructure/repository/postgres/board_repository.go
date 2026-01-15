@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -21,21 +20,21 @@ func NewBoardRepository(db *pgxpool.Pool) *BoardRepository {
 	return &BoardRepository{db: db}
 }
 
-func (r *BoardRepository) Create(ctx context.Context, board *board.Board) error {
+func (r *BoardRepository) Create(ctx context.Context, b *board.Board) error {
 
 	query := `
-        INSERT INTO boards (title, description, owner_id, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO boards (id, title, description, owner_id, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNIG ID
     `
 
 	err := r.db.QueryRow(ctx, query,
-		board.ID(),
-		board.Title(),
-		pgtype.Text{String: board.Description(), Valid: true},
-		board.OwnerID(),
-		board.CreatedAt(),
-		board.UpdatedAt(),
+		b.ID(),
+		b.Title(),
+		pgtype.Text{String: b.Description(), Valid: true},
+		b.OwnerID(),
+		b.CreatedAt(),
+		b.UpdatedAt(),
 	)
 
 	if err != nil {
@@ -45,14 +44,7 @@ func (r *BoardRepository) Create(ctx context.Context, board *board.Board) error 
 }
 
 func (r *BoardRepository) GetBoard(ctx context.Context, id board.BoardID) (*board.Board, error) {
-	var (
-		rawID       string
-		title       string
-		description string
-		ownerID     string
-		createdAt   time.Time
-		updatedAt   time.Time
-	)
+	var bModel boardModel
 
 	query := `
 		SELECT id, title, description, owner_id, created_at, updated_at
@@ -60,12 +52,12 @@ func (r *BoardRepository) GetBoard(ctx context.Context, id board.BoardID) (*boar
 		WHERE id = $1
 	`
 	err := r.db.QueryRow(ctx, query, string(id)).Scan(
-		&rawID,
-		&title,
-		&description,
-		&ownerID,
-		&createdAt,
-		&updatedAt,
+		&bModel.ID,
+		&bModel.Title,
+		&bModel.Description,
+		&bModel.OwnerID,
+		&bModel.CreatedAt,
+		&bModel.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -74,12 +66,12 @@ func (r *BoardRepository) GetBoard(ctx context.Context, id board.BoardID) (*boar
 		return nil, fmt.Errorf("failed to get board: %w", err)
 	}
 	b := board.RestoreBoard(
-		rawID,
-		title,
-		description,
-		ownerID,
-		createdAt,
-		updatedAt,
+		bModel.ID,
+		bModel.Title,
+		bModel.Description,
+		bModel.OwnerID,
+		bModel.CreatedAt,
+		bModel.UpdatedAt,
 	)
 	return b, nil
 }
@@ -99,22 +91,15 @@ func (r *BoardRepository) GetBoards(ctx context.Context) ([]*board.Board, error)
 	boards := make([]*board.Board, 0)
 
 	for rows.Next() {
-		var (
-			rawID       string
-			title       string
-			description string
-			ownerID     string
-			createdAt   time.Time
-			updatedAt   time.Time
-		)
+		var bModel boardModel
 
 		err := rows.Scan(
-			&rawID,
-			&title,
-			&description,
-			&ownerID,
-			&createdAt,
-			&updatedAt,
+			&bModel.ID,
+			&bModel.Title,
+			&bModel.Description,
+			&bModel.OwnerID,
+			&bModel.CreatedAt,
+			&bModel.UpdatedAt,
 		)
 
 		if err != nil {
@@ -122,12 +107,12 @@ func (r *BoardRepository) GetBoards(ctx context.Context) ([]*board.Board, error)
 		}
 
 		b := board.RestoreBoard(
-			rawID,
-			title,
-			description,
-			ownerID,
-			createdAt,
-			updatedAt,
+			bModel.ID,
+			bModel.Title,
+			bModel.Description,
+			bModel.OwnerID,
+			bModel.CreatedAt,
+			bModel.UpdatedAt,
 		)
 
 		boards = append(boards, b)
@@ -140,7 +125,7 @@ func (r *BoardRepository) GetBoards(ctx context.Context) ([]*board.Board, error)
 	return boards, nil
 }
 
-func (r *BoardRepository) Update(ctx context.Context, b board.Board) error {
+func (r *BoardRepository) Update(ctx context.Context, b *board.Board) error {
 	query := `
         UPDATE boards
         SET title = $1, description = $2, updated_at = $3

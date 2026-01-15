@@ -11,15 +11,20 @@ type Task struct {
 	columnID    column.ColumnID
 	title       Title
 	description Description
-	position    Position
+	rank        Rank
 	assigneeID  AssigneeID
 	createdAt   time.Time
 	updatedAt   time.Time
 }
 
-func NewBoard(gen IDGenerator, titleRaw, descRaw, assigneeRaw string, posRaw int) (*Task, error) {
+func NewTask(gen IDGenerator, columnRaw, titleRaw, descRaw, rankRaw, assigneeRaw string) (*Task, error) {
 	// Валидируем Title
 	title, err := NewTitle(titleRaw)
+	if err != nil {
+		return nil, err
+	}
+	//
+	columnID, err := column.NewColumnID(columnRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -28,8 +33,8 @@ func NewBoard(gen IDGenerator, titleRaw, descRaw, assigneeRaw string, posRaw int
 	if err != nil {
 		return nil, err
 	}
-	// Валидируем Position
-	pos, err := NewPosition(posRaw)
+	// Валидируем Rank
+	r, err := NewRank(rankRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -41,9 +46,10 @@ func NewBoard(gen IDGenerator, titleRaw, descRaw, assigneeRaw string, posRaw int
 
 	board := &Task{
 		id:          TaskID(gen.Generate()),
+		columnID:    columnID,
 		title:       title,
 		description: desc,
-		position:    pos,
+		rank:        r,
 		assigneeID:  assignee_id,
 		createdAt:   time.Now(),
 		updatedAt:   time.Now(),
@@ -52,12 +58,13 @@ func NewBoard(gen IDGenerator, titleRaw, descRaw, assigneeRaw string, posRaw int
 	return board, nil
 }
 
-func RestoreTask(id, title, desc, assigneeID string, pos int, createdAt, updatedAt time.Time) *Task {
+func RestoreTask(id, colID, title, desc, r, assigneeID string, createdAt, updatedAt time.Time) *Task {
 	return &Task{
 		id:          TaskID(id),
+		columnID:    column.ColumnID(colID),
 		title:       Title(title),
 		description: Description(desc),
-		position:    Position(pos),
+		rank:        Rank(r),
 		assigneeID:  AssigneeID(assigneeID),
 		createdAt:   createdAt,
 		updatedAt:   updatedAt,
@@ -66,9 +73,13 @@ func RestoreTask(id, title, desc, assigneeID string, pos int, createdAt, updated
 
 func (t *Task) ID() string { return string(t.id) }
 
+func (t *Task) ColumnID() string { return string(t.columnID) }
+
 func (t *Task) Title() string { return string(t.title) }
 
 func (t *Task) Description() string { return string(t.description) }
+
+func (t *Task) Rank() string { return string(t.rank) }
 
 func (t *Task) AssigneeID() string { return string(t.assigneeID) }
 
@@ -84,6 +95,14 @@ func (t *Task) UpdateTitle(newTitleRaw string) error {
 	t.title = title
 	t.updatedAt = time.Now()
 	return nil
+}
+
+func (t *Task) Move(toColumnId column.ColumnID, toRank Rank) {
+	now := time.Now().UTC()
+
+	t.columnID = toColumnId
+	t.rank = toRank
+	t.updatedAt = now
 }
 
 func (t *Task) UpdateDescription(newDescRaw string) error {

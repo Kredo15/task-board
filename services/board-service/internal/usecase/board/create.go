@@ -2,7 +2,6 @@ package board
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Kredo15/task-board/services/board-service/internal/domain/board"
 )
@@ -24,17 +23,10 @@ func NewCreateBoardUseCase(r board.BoardRepository, g board.IDGenerator) *Create
 // Execute обрабатывает команду создания доски
 func (h *CreateBoardUseCase) Execute(ctx context.Context, cmd *CreateBoardRequest) (*BoardResponse, error) {
 	// Преобразование запроса в доменную модель
-
-	title := strings.TrimSpace(cmd.Title)
-	desc := strings.TrimSpace(cmd.Description)
-	if cmd.OwnerID == "" {
-		return nil, board.ErrInvalidOwnerID
-	}
-
 	newBoard, err := board.NewBoard(
 		h.gen,
-		title,
-		desc,
+		cmd.Title,
+		cmd.Description,
 		cmd.OwnerID,
 	)
 
@@ -54,6 +46,7 @@ func (h *CreateBoardUseCase) Execute(ctx context.Context, cmd *CreateBoardReques
 		Description: newBoard.Description(),
 		OwnerID:     newBoard.OwnerID(),
 		CreatedAt:   newBoard.CreatedAt(),
+		UpdatedAt:   newBoard.UpdatedAt(),
 	}
 
 	return response, nil

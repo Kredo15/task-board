@@ -18,8 +18,11 @@ func NewGetBoardUseCase(r board.BoardRepository) *GetBoardUseCase {
 
 func (h *GetBoardUseCase) Execute(ctx context.Context, cmd *GetBoardRequest) (*BoardResponse, error) {
 	// Преобразование запроса в доменную модель
-	boardID := board.NewBoardID(cmd.ID)
-	// Сохранение доски в репозитории
+	boardID, err := board.NewBoardID(cmd.ID)
+	if err != nil {
+		return nil, err
+	}
+	// Получаем доску из репозитория
 	board, err := h.repo.GetBoard(ctx, boardID)
 	if err != nil {
 		return nil, err
