@@ -126,6 +126,85 @@ func (r *BoardRepository) GetBoards(ctx context.Context, owner_id board.OwnerID)
 	return boards, nil
 }
 
+func (r *BoardRepository) GetFullBoard(ctx context.Context, id board.BoardID) (*board.Board, error) {
+	// Запрос для получения доски с колонками и задачами
+	/*query := `
+	        SELECT
+				b.id, b.title, b.description, b.owner_id,
+				c.id, c.title, c.rank,
+				t.id, t.title, t.description, t.rank, t.assignee_id
+	        FROM boards b
+	        LEFT JOIN columns c ON b.id = c.board_id
+	        LEFT JOIN tasks t ON c.id = t.column_id
+	        WHERE b.id = $1
+	        ORDER BY c.rank, t.rank
+	`
+
+		rows, err := r.db.Query(ctx, query, id)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		var b *board.Entity
+		// Используем map, чтобы не дублировать колонки
+		// key: column_id, value: индекс в слайсе b.Columns
+		colMap := make(map[string]*column.Entity)
+
+		for rows.Next() {
+			var row boardRow
+			err := rows.Scan(
+				&row.BoardID, &row.BoardTitle,
+				&row.ColID, &row.ColTitle, &row.ColPos,
+				&row.TaskID, &row.TaskTitle, &row.TaskPos,
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			// 1. Инициализируем доску (только на первой итерации)
+			if b == nil {
+				b = &board.Entity{
+					ID:      row.BoardID,
+					Title:   row.BoardTitle,
+					Columns: []*column.Entity{},
+				}
+			}
+
+			// 2. Обрабатываем колонку (если она есть)
+			if row.ColID != nil {
+				col, exists := colMap[*row.ColID]
+				if !exists {
+					col = &column.Entity{
+						ID:       *row.ColID,
+						Title:    *row.ColTitle,
+						Position: *row.ColPos,
+						Tasks:    []*task.Entity{},
+					}
+					b.Columns = append(b.Columns, col)
+					colMap[*row.ColID] = col
+				}
+
+				// 3. Обрабатываем задачу (если она есть в этой колонке)
+				if row.TaskID != nil {
+					t := &task.Entity{
+						ID:       *row.TaskID,
+						Title:    *row.TaskTitle,
+						Position: *row.TaskPos,
+					}
+					col.Tasks = append(col.Tasks, t)
+				}
+			}
+		}
+
+		if b == nil {
+			return nil, board.ErrBoardNotFound
+		}
+
+		return b, nil */
+	return nil, nil
+}
+
 func (r *BoardRepository) Update(ctx context.Context, b *board.Board) error {
 	query := `
         UPDATE boards

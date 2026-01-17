@@ -55,10 +55,6 @@ func (uc *UpdateTaskUseCase) Execute(ctx context.Context, cmd *UpdateTaskRequest
 	// Сохраняем в транзакции через Outbox
 	//err = uc.repo.UpdateAndNotify(ctx, task)
 
-	// Инвалидация кэша Redis
-	//uc.cache.Delete(ctx, "board:"+task.BoardID)
-	// Так как нам нужно отдавать Position int, смотрим какой по счету текущий rank
-
 	return &TaskResponse{
 		t.ID(),
 		t.ColumnID(),

@@ -35,3 +35,18 @@ type columnModel struct {
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"update_at"`
 }
+
+// boardRow — модель для выборки доски с колонками и задачами через JOIN
+type boardRow struct {
+	// Данные доски
+	BoardID    string
+	BoardTitle string
+	// Данные колонки (могут быть NULL, если доска пустая)
+	ColID    *string
+	ColTitle *string
+	ColPos   *float64
+	// Данные задачи (могут быть NULL, если колонка пустая)
+	TaskID    *string
+	TaskTitle *string
+	TaskPos   *float64
+}

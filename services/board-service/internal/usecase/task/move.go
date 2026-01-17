@@ -61,9 +61,6 @@ func (uc *MoveTaskUseCase) Execute(ctx context.Context, cmd *MoveTaskRequest) (*
 	// Сохраняем в транзакции через Outbox
 	//err = uc.repo.UpdateAndNotify(ctx, task)
 
-	// Инвалидация кэша Redis
-	//uc.cache.Delete(ctx, "board:"+task.BoardID)
-
 	return &TaskResponse{
 		t.ID(),
 		t.ColumnID(),
