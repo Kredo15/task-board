@@ -29,11 +29,11 @@ func NewTitle(v string) (Title, error) {
 	return Title(v), nil
 }
 
-type Position int
+type Rank string
 
-func NewPosition(pos int) (Position, error) {
-	if pos < 0 {
-		return 0, ErrInvalidPosition
+func NewRank(r string) (Rank, error) {
+	if r == "" {
+		return "", ErrInvalidRank
 	}
-	return Position(pos), nil
+	return Rank(r), nil
 }

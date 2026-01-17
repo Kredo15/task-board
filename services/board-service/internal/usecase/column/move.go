@@ -1,32 +1,27 @@
-package task
+package column
 
 import (
 	"context"
 
 	"github.com/Kredo15/task-board/services/board-service/internal/domain"
 	"github.com/Kredo15/task-board/services/board-service/internal/domain/column"
-	"github.com/Kredo15/task-board/services/board-service/internal/domain/task"
 )
 
-type MoveTaskUseCase struct {
-	repo     task.TaskRepository
+type MoveColumnUseCase struct {
+	repo     column.ColumnRepository
 	lexorank domain.LexorankGen
 }
 
-func NewMoveTaskUseCase(r task.TaskRepository) *MoveTaskUseCase {
-	return &MoveTaskUseCase{
+func NewMoveColumnUseCase(r column.ColumnRepository) *MoveColumnUseCase {
+	return &MoveColumnUseCase{
 		repo: r,
 	}
 }
 
-func (uc *MoveTaskUseCase) Execute(ctx context.Context, cmd *MoveTaskRequest) (*TaskResponse, error) {
-	// Валидируем columnId
-	toColumnID, err := column.NewColumnID(cmd.ColumnID)
-	if err != nil {
-		return nil, err
-	}
-	// Получаем rank по id tasks
-	ranks, err := uc.repo.GetRanksByID(ctx, cmd.AfterTaskID, cmd.BeforeTaskID)
+func (uc *MoveColumnUseCase) Execute(ctx context.Context, cmd *MoveColumnRequest) (*ColumnResponse, error) {
+
+	// Получаем rank по id columns
+	ranks, err := uc.repo.GetRanksByID(ctx, cmd.AfterColumnID, cmd.BeforeColumnID)
 	if err != nil {
 		return nil, err
 	}
@@ -36,24 +31,24 @@ func (uc *MoveTaskUseCase) Execute(ctx context.Context, cmd *MoveTaskRequest) (*
 		return nil, err
 	}
 	// Валидируем taskId
-	task_id, err := task.NewTaskID(cmd.ID)
+	column_id, err := column.NewColumnID(cmd.ID)
 	if err != nil {
 		return nil, err
 	}
 	// Получаем нужную таску
-	t, err := uc.repo.GetByID(ctx, task_id)
+	c, err := uc.repo.GetByID(ctx, column_id)
 	if err != nil {
 		return nil, err
 	}
 	// Валидируем rank
-	toRank, err := task.NewRank(newrank)
+	toRank, err := column.NewRank(newrank)
 	if err != nil {
 		return nil, err
 	}
 	// Обновляем позицию и колонку
-	t.Move(toColumnID, toRank)
+	c.Move(toRank)
 	// Обновляем сущность
-	err_update := uc.repo.Update(ctx, t)
+	err_update := uc.repo.Update(ctx, c)
 	if err_update != nil {
 		return nil, err
 	}
@@ -64,14 +59,12 @@ func (uc *MoveTaskUseCase) Execute(ctx context.Context, cmd *MoveTaskRequest) (*
 	// Инвалидация кэша Redis
 	//uc.cache.Delete(ctx, "board:"+task.BoardID)
 
-	return &TaskResponse{
-		t.ID(),
-		t.ColumnID(),
-		t.Title(),
-		t.Description(),
-		t.Rank(),
-		t.AssigneeID(),
-		t.CreatedAt(),
-		t.UpdatedAt(),
+	return &ColumnResponse{
+		c.ID(),
+		c.BoardID(),
+		c.Title(),
+		c.Rank(),
+		c.CreatedAt(),
+		c.UpdatedAt(),
 	}, nil
 }

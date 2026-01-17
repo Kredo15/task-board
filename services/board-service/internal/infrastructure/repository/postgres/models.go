@@ -15,7 +15,7 @@ type boardModel struct {
 }
 
 // taskdModel — как задача выглядит в таблице Postgres
-type taskdModel struct {
+type taskModel struct {
 	ID          string    `db:"id"`
 	ColumnID    string    `db:"column_id"`
 	Title       string    `db:"title"`
@@ -24,4 +24,14 @@ type taskdModel struct {
 	AssigneeID  string    `db:"assignee_id"`
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"update_at"`
+}
+
+// columnModel — как колонка выглядит в таблице Postgres
+type columnModel struct {
+	ID        string    `db:"id"`
+	BoardID   string    `db:"board_id"`
+	Title     string    `db:"title"`
+	Rank      string    `db:"rank"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"update_at"`
 }

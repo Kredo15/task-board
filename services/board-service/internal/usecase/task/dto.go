@@ -6,14 +6,22 @@ type CreateTaskRequest struct {
 	ColumnID    string `json:"column_id" validate:"required"`
 	Title       string `json:"title" validate:"required,min=1,max=255"`
 	Description string `json:"description,omitempty" validate:"max=1000"`
-	Position    int32  `json:"position" validate:"required"`
+	Rank        string `json:"rank" validate:"required"`
 	AssigneeID  string `json:"assignee_id" validate:"required"`
 }
 
 type MoveTaskRequest struct {
-	ID       string `json:"id" validate:"required"`
-	ColumnID string `json:"column_id" validate:"required"`
-	Position int32  `json:"position" validate:"required"`
+	ID           string `json:"id" validate:"required"`
+	ColumnID     string `json:"column_id" validate:"required"`
+	AfterTaskID  string `json:"after_task_id"`
+	BeforeTaskID string `json:"before_task_id"`
+}
+
+type UpdateTaskRequest struct {
+	ID          string `json:"id" validate:"required"`
+	Title       string `json:"title" validate:"required,min=1,max=255"`
+	Description string `json:"description,omitempty" validate:"max=1000"`
+	AssigneeID  string `json:"assignee_id" validate:"required"`
 }
 
 type DeleteTaskRequest struct {
@@ -25,7 +33,7 @@ type TaskResponse struct {
 	ColumnID    string    `json:"column_id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	Position    int32     `json:"position"`
+	Rank        string    `json:"rank"`
 	AssigneeID  string    `json:"assignee_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`

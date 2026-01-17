@@ -58,17 +58,47 @@ func NewTask(gen IDGenerator, columnRaw, titleRaw, descRaw, rankRaw, assigneeRaw
 	return board, nil
 }
 
-func RestoreTask(id, colID, title, desc, r, assigneeID string, createdAt, updatedAt time.Time) *Task {
+func RestoreTask(idIn, colIDIn, titleIn, descIn, rIn, assigneeIDIn string, createdAt, updatedAt time.Time) (*Task, error) {
+	id, err := NewTaskID(idIn)
+	if err != nil {
+		return nil, err
+	}
+	// Валидируем Title
+	title, err := NewTitle(titleIn)
+	if err != nil {
+		return nil, err
+	}
+	//
+	colID, err := column.NewColumnID(colIDIn)
+	if err != nil {
+		return nil, err
+	}
+	// Валидируем Description
+	desc, err := NewDescription(descIn)
+	if err != nil {
+		return nil, err
+	}
+	// Валидируем Rank
+	r, err := NewRank(rIn)
+	if err != nil {
+		return nil, err
+	}
+	// Валидируем AssigneeID
+	assignee_id, err := NewAssigneeID(assigneeIDIn)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Task{
-		id:          TaskID(id),
-		columnID:    column.ColumnID(colID),
-		title:       Title(title),
-		description: Description(desc),
-		rank:        Rank(r),
-		assigneeID:  AssigneeID(assigneeID),
+		id:          id,
+		columnID:    colID,
+		title:       title,
+		description: desc,
+		rank:        r,
+		assigneeID:  assignee_id,
 		createdAt:   createdAt,
 		updatedAt:   updatedAt,
-	}
+	}, nil
 }
 
 func (t *Task) ID() string { return string(t.id) }
@@ -87,16 +117,6 @@ func (t *Task) CreatedAt() time.Time { return t.createdAt }
 
 func (t *Task) UpdatedAt() time.Time { return t.updatedAt }
 
-func (t *Task) UpdateTitle(newTitleRaw string) error {
-	title, err := NewTitle(newTitleRaw)
-	if err != nil {
-		return err
-	}
-	t.title = title
-	t.updatedAt = time.Now()
-	return nil
-}
-
 func (t *Task) Move(toColumnId column.ColumnID, toRank Rank) {
 	now := time.Now().UTC()
 
@@ -105,14 +125,13 @@ func (t *Task) Move(toColumnId column.ColumnID, toRank Rank) {
 	t.updatedAt = now
 }
 
-func (t *Task) UpdateDescription(newDescRaw string) error {
-	desc, err := NewDescription(newDescRaw)
-	if err != nil {
-		return err
-	}
+func (t *Task) Update(title Title, desc Description, assigneeID AssigneeID) {
+	now := time.Now().UTC()
+
+	t.title = title
 	t.description = desc
-	t.updatedAt = time.Now()
-	return nil
+	t.assigneeID = assigneeID
+	t.updatedAt = now
 }
 
 func (t *Task) Equals(other *Task) bool {

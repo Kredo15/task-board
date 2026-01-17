@@ -76,13 +76,14 @@ func (r *BoardRepository) GetBoard(ctx context.Context, id board.BoardID) (*boar
 	return b, nil
 }
 
-func (r *BoardRepository) GetBoards(ctx context.Context) ([]*board.Board, error) {
+func (r *BoardRepository) GetBoards(ctx context.Context, owner_id board.OwnerID) ([]*board.Board, error) {
 	query := `
 		SELECT id, title, description, owner_id, created_at, updated_at
 		FROM boards
+		WHERE owner_id = $1
 		ORDER BY created_at DESC
 	`
-	rows, err := r.db.Query(ctx, query)
+	rows, err := r.db.Query(ctx, query, owner_id)
 	if err != nil {
 		return nil, err
 	}
