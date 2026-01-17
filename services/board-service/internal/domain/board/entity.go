@@ -65,22 +65,19 @@ func (b *Board) CreatedAt() time.Time { return b.createdAt }
 
 func (b *Board) UpdatedAt() time.Time { return b.updatedAt }
 
-func (b *Board) UpdateTitle(newTitleRaw string) error {
+func (b *Board) Update(newTitleRaw, newDescRaw string) error {
 	title, err := NewTitle(newTitleRaw)
 	if err != nil {
 		return err
 	}
-	b.title = title
-	b.updatedAt = time.Now()
-	return nil
-}
 
-func (b *Board) UpdateDescription(newDescRaw string) error {
-	desc, err := NewDescription(newDescRaw)
+	description, err := NewDescription(newDescRaw)
 	if err != nil {
 		return err
 	}
-	b.description = desc
+
+	b.title = title
+	b.description = description
 	b.updatedAt = time.Now()
 	return nil
 }

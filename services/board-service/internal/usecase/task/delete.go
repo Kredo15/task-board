@@ -19,17 +19,17 @@ func NewDeleteTaskUseCase(r task.TaskRepository) *DeleteTaskUseCase {
 }
 
 // Execute обрабатывает команду удаления задачи
-func (h *DeleteTaskUseCase) Execute(ctx context.Context, cmd *DeleteTaskRequest) (*DeleteTaskResponse, error) {
+func (h *DeleteTaskUseCase) Execute(ctx context.Context, cmd *DeleteTaskRequest) error {
 	// Преобразование запроса в доменную модель
 	taskID, err := task.NewTaskID(cmd.ID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = h.repo.Delete(ctx, taskID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &DeleteTaskResponse{}, nil
+	return nil
 }

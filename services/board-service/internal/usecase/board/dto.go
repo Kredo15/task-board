@@ -17,6 +17,16 @@ type GetBoardsRequest struct {
 	OwnerID string `json:"owner_id" validate:"required"`
 }
 
+type UpdateBoardRequest struct {
+	ID          string `json:"id" validate:"required"`
+	Title       string `json:"title" validate:"required,min=1,max=255"`
+	Description string `json:"description,omitempty" validate:"max=1000"`
+}
+
+type DeleteBoardRequest struct {
+	ID string `json:"id" validate:"required"`
+}
+
 type BoardResponse struct {
 	ID          string    `json:"id"`
 	Title       string    `json:"title"`

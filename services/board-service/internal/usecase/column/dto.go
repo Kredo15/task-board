@@ -12,15 +12,18 @@ type MoveColumnRequest struct {
 	ID             string `json:"id" validate:"required"`
 	AfterColumnID  string `json:"after_column_id"`
 	BeforeColumnID string `json:"before_column_id"`
+	BoardID        string `json:"board_id" validate:"required"`
 }
 
 type UpdateColumnRequest struct {
-	ID    string `json:"id" validate:"required"`
-	Title string `json:"title" validate:"required,min=1,max=255"`
+	ID      string `json:"id" validate:"required"`
+	Title   string `json:"title" validate:"required,min=1,max=255"`
+	BoardID string `json:"board_id" validate:"required"`
 }
 
 type DeleteColumnRequest struct {
-	ID string `json:"id" validate:"required"`
+	ID      string `json:"id" validate:"required"`
+	BoardID string `json:"board_id" validate:"required"`
 }
 
 type ColumnResponse struct {

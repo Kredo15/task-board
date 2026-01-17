@@ -43,7 +43,7 @@ func (r *BoardRepository) Create(ctx context.Context, b *board.Board) error {
 	return nil
 }
 
-func (r *BoardRepository) GetBoard(ctx context.Context, id board.BoardID) (*board.Board, error) {
+func (r *BoardRepository) GetByID(ctx context.Context, id board.BoardID) (*board.Board, error) {
 	var bModel boardModel
 
 	query := `

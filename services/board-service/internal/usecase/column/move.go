@@ -56,9 +56,6 @@ func (uc *MoveColumnUseCase) Execute(ctx context.Context, cmd *MoveColumnRequest
 	// Сохраняем в транзакции через Outbox
 	//err = uc.repo.UpdateAndNotify(ctx, task)
 
-	// Инвалидация кэша Redis
-	//uc.cache.Delete(ctx, "board:"+task.BoardID)
-
 	return &ColumnResponse{
 		c.ID(),
 		c.BoardID(),

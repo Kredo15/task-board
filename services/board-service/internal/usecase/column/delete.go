@@ -19,17 +19,17 @@ func NewDeleteTaskUseCase(r column.ColumnRepository) *DeleteColumnUseCase {
 }
 
 // Execute обрабатывает команду удаления задачи
-func (h *DeleteColumnUseCase) Execute(ctx context.Context, cmd *DeleteColumnRequest) (*DeleteColumnResponse, error) {
+func (h *DeleteColumnUseCase) Execute(ctx context.Context, cmd *DeleteColumnRequest) error {
 	// Преобразование запроса в доменную модель
 	columnID, err := column.NewColumnID(cmd.ID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = h.repo.Delete(ctx, columnID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &DeleteColumnResponse{}, nil
+	return nil
 }

@@ -23,7 +23,7 @@ func (h *GetBoardUseCase) Execute(ctx context.Context, cmd *GetBoardRequest) (*B
 		return nil, err
 	}
 	// Получаем доску из репозитория
-	board, err := h.repo.GetBoard(ctx, boardID)
+	board, err := h.repo.GetByID(ctx, boardID)
 	if err != nil {
 		return nil, err
 	}
