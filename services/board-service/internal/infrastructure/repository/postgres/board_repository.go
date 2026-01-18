@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -20,26 +22,155 @@ func NewBoardRepository(db *pgxpool.Pool) *BoardRepository {
 	return &BoardRepository{db: db}
 }
 
-func (r *BoardRepository) Create(ctx context.Context, b *board.Board) error {
+func (r *BoardRepository) Create(ctx context.Context, b *board.Board, event *board.DomainEvent) error {
+	// Начинаем транзакцию
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx) // Commit отменит этот вызов, если все пройдет успешно
 
 	query := `
         INSERT INTO boards (id, title, description, owner_id, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNIG ID
     `
 
-	err := r.db.QueryRow(ctx, query,
+	_, err = tx.Exec(ctx, query,
 		b.ID(),
 		b.Title(),
-		pgtype.Text{String: b.Description(), Valid: true},
+		pgtype.Text{String: b.Description(), Valid: b.Description() != ""},
 		b.OwnerID(),
 		b.CreatedAt(),
 		b.UpdatedAt(),
 	)
 
 	if err != nil {
-		return fmt.Errorf("failed to create board: %s", err)
+		return fmt.Errorf("failed to insert board: %w", err)
 	}
+	// Сохраняем событие в outbox, если оно есть
+	if event != nil {
+		const outboxQuery = `
+            INSERT INTO outbox (id, aggregate_type, aggregate_id, event_type, payload, occurred_at)
+            VALUES ($1, $2, $3, $4, $5, $6)`
+
+		_, err = tx.Exec(ctx, outboxQuery,
+			event.ID,
+			"board",
+			b.ID(),
+			event.Type,
+			event.Payload,
+			event.OccurredAt,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to save outbox event: %w", err)
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
+
+	return nil
+}
+
+func (r *BoardRepository) Update(ctx context.Context, b *board.Board, event *board.DomainEvent) error {
+	// Начинаем транзакцию
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx) // Commit отменит этот вызов, если все пройдет успешно
+
+	query := `
+		UPDATE boards
+		SET title = $1, description = $2, updated_at = $3
+		WHERE id = $4
+	`
+
+	result, err := tx.Exec(ctx, query,
+		b.Title(),
+		pgtype.Text{String: b.Description(), Valid: b.Description() != ""},
+		b.UpdatedAt(),
+		b.ID(),
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to update board: %w", err)
+	}
+
+	if result.RowsAffected() == 0 {
+		return board.ErrBoardNotFound
+	}
+
+	// Сохраняем событие в outbox, если оно есть
+	if event != nil {
+		const outboxQuery = `
+            INSERT INTO outbox (id, aggregate_type, aggregate_id, event_type, payload, occurred_at)
+            VALUES ($1, $2, $3, $4, $5, $6)`
+
+		_, err = tx.Exec(ctx, outboxQuery,
+			event.ID,
+			"board",
+			b.ID(),
+			event.Type,
+			event.Payload,
+			event.OccurredAt,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to save outbox event: %w", err)
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
+
+	return nil
+}
+
+func (r *BoardRepository) Delete(ctx context.Context, id board.BoardID, event *board.DomainEvent) error {
+	// Начинаем транзакцию
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx) // Commit отменит этот вызов, если все пройдет успешно
+
+	query := `
+		DELETE FROM boards
+		WHERE id = $1
+	`
+	result, err := tx.Exec(ctx, query, string(id))
+
+	if err != nil {
+		return fmt.Errorf("failed to delete board: %w", err)
+	}
+
+	if result.RowsAffected() == 0 {
+		return board.ErrBoardNotFound
+	}
+
+	// Сохраняем событие в outbox, если оно есть
+	if event != nil {
+		const outboxQuery = `
+            INSERT INTO outbox (id, aggregate_type, aggregate_id, event_type, payload, occurred_at)
+            VALUES ($1, $2, $3, $4, $5, $6)`
+
+		_, err = tx.Exec(ctx, outboxQuery,
+			event.ID,
+			"board",
+			string(id),
+			event.Type,
+			event.Payload,
+			event.OccurredAt,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to save outbox event: %w", err)
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
+
 	return nil
 }
 
@@ -60,7 +191,7 @@ func (r *BoardRepository) GetByID(ctx context.Context, id board.BoardID) (*board
 		&bModel.UpdatedAt,
 	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, board.ErrBoardNotFound
 		}
 		return nil, fmt.Errorf("failed to get board: %w", err)
@@ -68,181 +199,101 @@ func (r *BoardRepository) GetByID(ctx context.Context, id board.BoardID) (*board
 	b := board.RestoreBoard(
 		bModel.ID,
 		bModel.Title,
-		bModel.Description,
+		bModel.Description.String,
 		bModel.OwnerID,
 		bModel.CreatedAt,
 		bModel.UpdatedAt,
+		nil,
 	)
 	return b, nil
 }
 
-func (r *BoardRepository) GetBoards(ctx context.Context, owner_id board.OwnerID) ([]*board.Board, error) {
+func (r *BoardRepository) GetFullBoard(ctx context.Context, id board.BoardID) (*board.Board, error) {
+	// Запрос для получения доски с колонками и задачами
 	query := `
-		SELECT id, title, description, owner_id, created_at, updated_at
-		FROM boards
-		WHERE owner_id = $1
-		ORDER BY created_at DESC
-	`
-	rows, err := r.db.Query(ctx, query, owner_id)
+        SELECT 
+            b.id, b.title, b.description, b.owner_id, b.created_at, b.updated_at,
+            c.id, c.title, c.rank, c.created_at, c.updated_at,
+            t.id, t.column_id, t.title, t.content, t.rank, t.assignee_id, t.created_at, t.updated_at
+        FROM boards b
+        LEFT JOIN columns c ON b.id = c.board_id
+        LEFT JOIN tasks t ON c.id = t.column_id
+        WHERE b.id = $1
+        ORDER BY c.rank, t.rank
+    `
+
+	rows, err := r.db.Query(ctx, query, string(id))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	boards := make([]*board.Board, 0)
+	var b *board.Board
+	columns := make(map[string]*board.Column)
+	tasksMap := make(map[string][]*board.Task)
 
 	for rows.Next() {
-		var bModel boardModel
+		var (
+			// Временные переменные для сканирования
+			bID, bTitle, bOwnerID  string
+			bDesc                  pgtype.Text
+			bCreatedAt, bUpdatedAt time.Time
+
+			cID, cTitle, cRank     sql.NullString
+			cCreatedAt, cUpdatedAt sql.NullTime
+
+			tID, tColID, tTitle, tDesc, tRank, tAssigneeID sql.NullString
+			tCreatedAt, tUpdatedAt                         sql.NullTime
+		)
 
 		err := rows.Scan(
-			&bModel.ID,
-			&bModel.Title,
-			&bModel.Description,
-			&bModel.OwnerID,
-			&bModel.CreatedAt,
-			&bModel.UpdatedAt,
+			&bID, &bTitle, &bDesc, &bOwnerID, &bCreatedAt, &bUpdatedAt,
+			&cID, &cTitle, &cRank, &cCreatedAt, &cUpdatedAt,
+			&tID, &tColID, &tTitle, &tDesc, &tRank, &tAssigneeID, &tCreatedAt, &tUpdatedAt,
 		)
 
 		if err != nil {
 			return nil, err
 		}
 
-		b := board.RestoreBoard(
-			bModel.ID,
-			bModel.Title,
-			bModel.Description,
-			bModel.OwnerID,
-			bModel.CreatedAt,
-			bModel.UpdatedAt,
-		)
-
-		boards = append(boards, b)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return boards, nil
-}
-
-func (r *BoardRepository) GetFullBoard(ctx context.Context, id board.BoardID) (*board.Board, error) {
-	// Запрос для получения доски с колонками и задачами
-	/*query := `
-	        SELECT
-				b.id, b.title, b.description, b.owner_id,
-				c.id, c.title, c.rank,
-				t.id, t.title, t.description, t.rank, t.assignee_id
-	        FROM boards b
-	        LEFT JOIN columns c ON b.id = c.board_id
-	        LEFT JOIN tasks t ON c.id = t.column_id
-	        WHERE b.id = $1
-	        ORDER BY c.rank, t.rank
-	`
-
-		rows, err := r.db.Query(ctx, query, id)
-		if err != nil {
-			return nil, err
+		// Инициализируем доску, если она еще не создана
+		if b == nil {
+			b = board.RestoreBoard(bID, bTitle, bDesc.String, bOwnerID, bCreatedAt, bUpdatedAt, nil)
 		}
-		defer rows.Close()
+		// Обрабатываем колонку, если она существует
+		if cID.Valid {
+			if _, ok := columns[cID.String]; !ok {
+				columns[cID.String], err = board.RestoreColumn(
+					cID.String, bID, cTitle.String, cRank.String,
+					cCreatedAt.Time, cUpdatedAt.Time, nil,
+				)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
 
-		var b *board.Entity
-		// Используем map, чтобы не дублировать колонки
-		// key: column_id, value: индекс в слайсе b.Columns
-		colMap := make(map[string]*column.Entity)
-
-		for rows.Next() {
-			var row boardRow
-			err := rows.Scan(
-				&row.BoardID, &row.BoardTitle,
-				&row.ColID, &row.ColTitle, &row.ColPos,
-				&row.TaskID, &row.TaskTitle, &row.TaskPos,
+		// Обрабатываем задачу, если она существует
+		if tID.Valid {
+			task, err := board.RestoreTask(
+				tID.String, bID, tColID.String, tTitle.String,
+				tDesc.String, tRank.String, tAssigneeID.String, tCreatedAt.Time, tUpdatedAt.Time,
 			)
 			if err != nil {
 				return nil, err
 			}
-
-			// 1. Инициализируем доску (только на первой итерации)
-			if b == nil {
-				b = &board.Entity{
-					ID:      row.BoardID,
-					Title:   row.BoardTitle,
-					Columns: []*column.Entity{},
-				}
-			}
-
-			// 2. Обрабатываем колонку (если она есть)
-			if row.ColID != nil {
-				col, exists := colMap[*row.ColID]
-				if !exists {
-					col = &column.Entity{
-						ID:       *row.ColID,
-						Title:    *row.ColTitle,
-						Position: *row.ColPos,
-						Tasks:    []*task.Entity{},
-					}
-					b.Columns = append(b.Columns, col)
-					colMap[*row.ColID] = col
-				}
-
-				// 3. Обрабатываем задачу (если она есть в этой колонке)
-				if row.TaskID != nil {
-					t := &task.Entity{
-						ID:       *row.TaskID,
-						Title:    *row.TaskTitle,
-						Position: *row.TaskPos,
-					}
-					col.Tasks = append(col.Tasks, t)
-				}
-			}
+			tasksMap[tColID.String] = append(tasksMap[tColID.String], task)
 		}
-
-		if b == nil {
-			return nil, board.ErrBoardNotFound
-		}
-
-		return b, nil */
-	return nil, nil
-}
-
-func (r *BoardRepository) Update(ctx context.Context, b *board.Board) error {
-	query := `
-        UPDATE boards
-        SET title = $1, description = $2, updated_at = $3
-        WHERE id = $4
-    `
-
-	result, err := r.db.Exec(ctx, query,
-		b.Title(),
-		pgtype.Text{String: b.Description(), Valid: true},
-		b.UpdatedAt(),
-		b.ID(),
-	)
-
-	if err != nil {
-		return fmt.Errorf("failed to update board: %w", err)
 	}
 
-	if result.RowsAffected() == 0 {
-		return board.ErrBoardNotFound
+	finalColumns := make([]*board.Column, 0, len(columns))
+	for colID, col := range columns {
+		colTasks := tasksMap[colID]
+		col.SetTasks(colTasks)
+		finalColumns = append(finalColumns, col)
 	}
 
-	return nil
-}
+	b.SetColumns(finalColumns)
 
-func (r *BoardRepository) Delete(ctx context.Context, id board.BoardID) error {
-	query := `
-		DELETE FROM boards
-		WHERE id = $1
-	`
-	result, err := r.db.Exec(ctx, query, string(id))
-
-	if err != nil {
-		return fmt.Errorf("failed to delete board: %w", err)
-	}
-
-	if result.RowsAffected() == 0 {
-		return board.ErrBoardNotFound
-	}
-	return nil
+	return b, nil
 }

@@ -23,8 +23,8 @@ func (l *LexorankGen) Between(prevKey, nextKey string) (string, error) {
 	// Очищаем входящие ранги от старых солей перед вычислением
 	purePrev := strings.Split(prevKey, ":")[0]
 	pureNext := strings.Split(nextKey, ":")[0]
-
-	rank, err := l.Between(purePrev, pureNext)
+	// Вычисляем новый ранг между двумя заданными рангами
+	rank, err := l.Gen.Between(lexorank.Key(purePrev), lexorank.Key(pureNext))
 	if err != nil {
 		return "", err
 	}

@@ -5,6 +5,14 @@ import (
 	"unicode/utf8"
 )
 
+type IDGenerator interface {
+	Generate() string
+}
+
+type LexorankGen interface {
+	Between(prevKey, nextKey string) (string, error)
+}
+
 type BoardID string
 
 func NewBoardID(id string) (BoardID, error) {
@@ -12,10 +20,6 @@ func NewBoardID(id string) (BoardID, error) {
 		return "", ErrInvalidBoardID
 	}
 	return BoardID(id), nil
-}
-
-type IDGenerator interface {
-	Generate() string
 }
 
 type Title string
@@ -48,4 +52,40 @@ func NewOwnerID(id string) (OwnerID, error) {
 		return "", ErrInvalidOwnerID
 	}
 	return OwnerID(id), nil
+}
+
+type ColumnID string
+
+func NewColumnID(id string) (ColumnID, error) {
+	if id == "" {
+		return "", ErrInvalidColumnID
+	}
+	return ColumnID(id), nil
+}
+
+type Rank string
+
+func NewRank(r string) (Rank, error) {
+	if r == "" {
+		return "", ErrInvalidRank
+	}
+	return Rank(r), nil
+}
+
+type TaskID string
+
+func NewTaskID(id string) (TaskID, error) {
+	if id == "" {
+		return "", ErrInvalidTaskID
+	}
+	return TaskID(id), nil
+}
+
+type AssigneeID string
+
+func NewAssigneeID(id string) (AssigneeID, error) {
+	if id == "" {
+		return "", ErrInvalidAssigneeID
+	}
+	return AssigneeID(id), nil
 }

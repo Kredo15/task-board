@@ -8,30 +8,34 @@ import (
 
 type UpdateBoardUseCase struct {
 	repo board.BoardRepository
+	gen  board.IDGenerator
 }
 
-func NewUpdateBoardUseCase(r board.BoardRepository) *UpdateBoardUseCase {
+func NewUpdateBoardUseCase(r board.BoardRepository, gen board.IDGenerator) *UpdateBoardUseCase {
 	return &UpdateBoardUseCase{
 		repo: r,
+		gen:  gen,
 	}
 }
 
-func (h *UpdateBoardUseCase) Execute(ctx context.Context, cmd *UpdateBoardRequest) (*BoardResponse, error) {
+func (uc *UpdateBoardUseCase) Execute(ctx context.Context, req *UpdateBoardRequest) (*BoardResponse, error) {
 	// Преобразование запроса в доменную модель
-	boardID, err := board.NewBoardID(cmd.ID)
+	boardID, err := board.NewBoardID(req.ID)
 	if err != nil {
 		return nil, err
 	}
 	// Получаем доску из репозитория
-	b, err := h.repo.GetByID(ctx, boardID)
+	b, err := uc.repo.GetByID(ctx, boardID)
 	if err != nil {
 		return nil, err
 	}
-	// Обновляем доску
-	b.Update(cmd.Title, cmd.Description)
-	// Сохраняем обновленную доску в репозитории
-	err = h.repo.Update(ctx, b)
+	// Обновляем доску и генерируем событие
+	event, err := b.Update(uc.gen, req.Title, req.Description)
 	if err != nil {
+		return nil, err
+	}
+	// Сохраняем обновленную доску в репозитории и сохраняем событие
+	if err := uc.repo.Update(ctx, b, event); err != nil {
 		return nil, err
 	}
 	// Возвращаем успешный ответ

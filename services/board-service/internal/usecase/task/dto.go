@@ -12,11 +12,11 @@ type CreateTaskRequest struct {
 }
 
 type MoveTaskRequest struct {
-	ID           string `json:"id" validate:"required"`
-	ColumnID     string `json:"column_id" validate:"required"`
-	AfterTaskID  string `json:"after_task_id"`
-	BeforeTaskID string `json:"before_task_id"`
-	BoardID      string `json:"board_id" validate:"required"`
+	ID           string  `json:"id" validate:"required"`
+	ColumnID     string  `json:"column_id" validate:"required"`
+	AfterTaskID  *string `json:"after_task_id"`
+	BeforeTaskID *string `json:"before_task_id"`
+	BoardID      string  `json:"board_id" validate:"required"`
 }
 
 type UpdateTaskRequest struct {
@@ -42,5 +42,3 @@ type TaskResponse struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
-
-type DeleteTaskResponse struct{}

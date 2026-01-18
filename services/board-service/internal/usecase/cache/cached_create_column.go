@@ -7,15 +7,15 @@ import (
 )
 
 type cachedCreateColumnUseCase struct {
-	next  column.CreateColumnUseCase
+	next  column.AddColumnUseCase
 	cache Invalidator
 }
 
-func NewCachedCreateColumnUseCase(next column.CreateColumnUseCase, cache BoardCache) *cachedCreateColumnUseCase {
+func NewCachedCreateColumnUseCase(next column.AddColumnUseCase, cache Invalidator) *cachedCreateColumnUseCase {
 	return &cachedCreateColumnUseCase{next: next, cache: cache}
 }
 
-func (c *cachedCreateColumnUseCase) Execute(ctx context.Context, cmd *column.CreateColumnRequest) (*column.ColumnResponse, error) {
+func (c *cachedCreateColumnUseCase) Execute(ctx context.Context, cmd *column.AddColumnRequest) (*column.ColumnResponse, error) {
 	// Сначала выполняем основной сценарий создания колонки
 	resp, err := c.next.Execute(ctx, cmd)
 	if err != nil {

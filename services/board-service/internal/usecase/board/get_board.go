@@ -23,7 +23,7 @@ func (h *GetBoardUseCase) Execute(ctx context.Context, cmd *GetBoardRequest) (*B
 		return nil, err
 	}
 	// Получаем доску из репозитория
-	board, err := h.repo.GetByID(ctx, boardID)
+	board, err := h.repo.GetFullBoard(ctx, boardID)
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +35,34 @@ func (h *GetBoardUseCase) Execute(ctx context.Context, cmd *GetBoardRequest) (*B
 		Description: board.Description(),
 		OwnerID:     board.OwnerID(),
 		CreatedAt:   board.CreatedAt(),
+		UpdatedAt:   board.UpdatedAt(),
+		Columns:     make([]ColumnResponse, 0),
+	}
+
+	for _, col := range board.Columns() {
+		columnResp := ColumnResponse{
+			ID:        col.ID(),
+			Title:     col.Title(),
+			Rank:      col.Rank(),
+			CreatedAt: col.CreatedAt(),
+			UpdatedAt: col.UpdatedAt(),
+			Tasks:     make([]TaskResponse, 0),
+		}
+		for _, task := range col.Tasks() {
+			taskResp := TaskResponse{
+				ID:          task.ID(),
+				ColumnID:    task.ColumnID(),
+				Title:       task.Title(),
+				Description: task.Description(),
+				Rank:        task.Rank(),
+				AssigneeID:  task.AssigneeID(),
+				CreatedAt:   task.CreatedAt(),
+				UpdatedAt:   task.UpdatedAt(),
+			}
+			columnResp.Tasks = append(columnResp.Tasks, taskResp)
+		}
+
+		response.Columns = append(response.Columns, columnResp)
 	}
 
 	return response, nil

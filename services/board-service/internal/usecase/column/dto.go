@@ -2,17 +2,16 @@ package column
 
 import "time"
 
-type CreateColumnRequest struct {
+type AddColumnRequest struct {
 	BoardID string `json:"board_id" validate:"required"`
 	Title   string `json:"title" validate:"required,min=1,max=255"`
-	Rank    string `json:"rank" validate:"required"`
 }
 
 type MoveColumnRequest struct {
-	ID             string `json:"id" validate:"required"`
-	AfterColumnID  string `json:"after_column_id"`
-	BeforeColumnID string `json:"before_column_id"`
-	BoardID        string `json:"board_id" validate:"required"`
+	ID             string  `json:"id" validate:"required"`
+	AfterColumnID  *string `json:"after_column_id"`
+	BeforeColumnID *string `json:"before_column_id"`
+	BoardID        string  `json:"board_id" validate:"required"`
 }
 
 type UpdateColumnRequest struct {
@@ -34,5 +33,3 @@ type ColumnResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
-
-type DeleteColumnResponse struct{}

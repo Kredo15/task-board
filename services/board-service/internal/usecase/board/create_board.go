@@ -23,7 +23,7 @@ func NewCreateBoardUseCase(r board.BoardRepository, g board.IDGenerator) *Create
 // Execute обрабатывает команду создания доски
 func (h *CreateBoardUseCase) Execute(ctx context.Context, cmd *CreateBoardRequest) (*BoardResponse, error) {
 	// Преобразование запроса в доменную модель
-	newBoard, err := board.NewBoard(
+	newBoard, event, err := board.NewBoard(
 		h.gen,
 		cmd.Title,
 		cmd.Description,
@@ -34,8 +34,8 @@ func (h *CreateBoardUseCase) Execute(ctx context.Context, cmd *CreateBoardReques
 		return nil, err
 	}
 
-	// Сохранение доски в репозитории
-	if err := h.repo.Create(ctx, newBoard); err != nil {
+	// Сохраненяем доску в репозитории и сохраняем событие
+	if err := h.repo.Create(ctx, newBoard, event); err != nil {
 		return nil, err
 	}
 
