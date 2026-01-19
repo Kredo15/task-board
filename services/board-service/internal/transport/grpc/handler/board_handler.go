@@ -8,17 +8,17 @@ import (
 
 type BoardHandler struct {
 	boardv1.UnimplementedBoardServiceServer
-	createUC CreateBoard
-	getUC    GetBoard
-	validate *validator.Validator
-	log      logger.Logger
+	createBoardUC CreateBoard
+	getBoardUC    GetBoard
+	validate      *validator.Validator
+	log           logger.Logger
 }
 
-func NewBoardHandler(cUC CreateBoard, gUC GetBoard, v *validator.Validator, l logger.Logger) *BoardHandler {
+func NewBoardHandler(createBoardUC CreateBoard, getBoardUC GetBoard, validate *validator.Validator, log logger.Logger) *BoardHandler {
 	return &BoardHandler{
-		createUC: cUC,
-		getUC:    gUC,
-		validate: v,
-		log:      l,
+		createBoardUC: createBoardUC,
+		getBoardUC:    getBoardUC,
+		validate:      validate,
+		log:           log,
 	}
 }

@@ -12,10 +12,7 @@ type GetBoard interface {
 	Execute(ctx context.Context, cmd *usecase.GetBoardRequest) (*usecase.BoardResponse, error)
 }
 
-func (h *BoardHandler) Get(
-	ctx context.Context,
-	req *boardv1.GetBoardRequest,
-) (*boardv1.GetBoardResponse, error) {
+func (h *BoardHandler) Get(ctx context.Context, req *boardv1.GetBoardRequest) (*boardv1.GetBoardResponse, error) {
 
 	_, err := grpcutil.GetUserID(ctx)
 	if err != nil {
@@ -31,7 +28,7 @@ func (h *BoardHandler) Get(
 		return nil, mapErrorToGRPC(err)
 	}
 
-	createdBoard, err := h.getUC.Execute(ctx, &boardDTO)
+	createdBoard, err := h.getBoardUC.Execute(ctx, &boardDTO)
 	if err != nil {
 		h.log.Error("createBoard usecase error", err)
 		return nil, mapErrorToGRPC(err)

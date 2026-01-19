@@ -21,7 +21,7 @@ func mapDTOBoardToProto(b *usecase.BoardResponse) *boardv1.Board {
 	}
 }
 
-func mapDTOBoardViewToProto(b *usecase.BoardResponse) *boardv1.Board {
+func mapDTOBoardViewToProto(b *usecase.BoardResponse) *boardv1.BoardView {
 	if b == nil {
 		return nil
 	}
@@ -34,7 +34,7 @@ func mapDTOBoardViewToProto(b *usecase.BoardResponse) *boardv1.Board {
 		CreatedAt:   timestamppb.New(b.CreatedAt),
 		UpdatedAt:   timestamppb.New(b.CreatedAt),
 	}
-	columns := make([]*boardv1.ColumnView, 0)
+
 	boardView := &boardv1.BoardView{
 		Board:   board,
 		Columns: make([]*boardv1.ColumnView, 0), // Columns добавлю позже

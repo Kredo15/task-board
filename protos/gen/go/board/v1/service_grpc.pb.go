@@ -26,6 +26,7 @@ const (
 	BoardService_DeleteBoard_FullMethodName  = "/board.v1.BoardService/DeleteBoard"
 	BoardService_CreateColumn_FullMethodName = "/board.v1.BoardService/CreateColumn"
 	BoardService_UpdateColumn_FullMethodName = "/board.v1.BoardService/UpdateColumn"
+	BoardService_MoveColumn_FullMethodName   = "/board.v1.BoardService/MoveColumn"
 	BoardService_DeleteColumn_FullMethodName = "/board.v1.BoardService/DeleteColumn"
 	BoardService_CreateTask_FullMethodName   = "/board.v1.BoardService/CreateTask"
 	BoardService_UpdateTask_FullMethodName   = "/board.v1.BoardService/UpdateTask"
@@ -44,6 +45,7 @@ type BoardServiceClient interface {
 	DeleteBoard(ctx context.Context, in *DeleteBoardRequest, opts ...grpc.CallOption) (*DeleteBoardResponse, error)
 	CreateColumn(ctx context.Context, in *CreateColumnRequest, opts ...grpc.CallOption) (*CreateColumnResponse, error)
 	UpdateColumn(ctx context.Context, in *UpdateColumnRequest, opts ...grpc.CallOption) (*UpdateColumnResponse, error)
+	MoveColumn(ctx context.Context, in *MoveColumnRequest, opts ...grpc.CallOption) (*MoveColumnResponse, error)
 	DeleteColumn(ctx context.Context, in *DeleteColumnRequest, opts ...grpc.CallOption) (*DeleteColumnResponse, error)
 	CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*CreateTaskResponse, error)
 	UpdateTask(ctx context.Context, in *UpdateTaskRequest, opts ...grpc.CallOption) (*UpdateTaskResponse, error)
@@ -129,6 +131,16 @@ func (c *boardServiceClient) UpdateColumn(ctx context.Context, in *UpdateColumnR
 	return out, nil
 }
 
+func (c *boardServiceClient) MoveColumn(ctx context.Context, in *MoveColumnRequest, opts ...grpc.CallOption) (*MoveColumnResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MoveColumnResponse)
+	err := c.cc.Invoke(ctx, BoardService_MoveColumn_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *boardServiceClient) DeleteColumn(ctx context.Context, in *DeleteColumnRequest, opts ...grpc.CallOption) (*DeleteColumnResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteColumnResponse)
@@ -190,6 +202,7 @@ type BoardServiceServer interface {
 	DeleteBoard(context.Context, *DeleteBoardRequest) (*DeleteBoardResponse, error)
 	CreateColumn(context.Context, *CreateColumnRequest) (*CreateColumnResponse, error)
 	UpdateColumn(context.Context, *UpdateColumnRequest) (*UpdateColumnResponse, error)
+	MoveColumn(context.Context, *MoveColumnRequest) (*MoveColumnResponse, error)
 	DeleteColumn(context.Context, *DeleteColumnRequest) (*DeleteColumnResponse, error)
 	CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error)
 	UpdateTask(context.Context, *UpdateTaskRequest) (*UpdateTaskResponse, error)
@@ -225,6 +238,9 @@ func (UnimplementedBoardServiceServer) CreateColumn(context.Context, *CreateColu
 }
 func (UnimplementedBoardServiceServer) UpdateColumn(context.Context, *UpdateColumnRequest) (*UpdateColumnResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateColumn not implemented")
+}
+func (UnimplementedBoardServiceServer) MoveColumn(context.Context, *MoveColumnRequest) (*MoveColumnResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method MoveColumn not implemented")
 }
 func (UnimplementedBoardServiceServer) DeleteColumn(context.Context, *DeleteColumnRequest) (*DeleteColumnResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteColumn not implemented")
@@ -388,6 +404,24 @@ func _BoardService_UpdateColumn_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BoardService_MoveColumn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MoveColumnRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BoardServiceServer).MoveColumn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BoardService_MoveColumn_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BoardServiceServer).MoveColumn(ctx, req.(*MoveColumnRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _BoardService_DeleteColumn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteColumnRequest)
 	if err := dec(in); err != nil {
@@ -512,6 +546,10 @@ var BoardService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateColumn",
 			Handler:    _BoardService_UpdateColumn_Handler,
+		},
+		{
+			MethodName: "MoveColumn",
+			Handler:    _BoardService_MoveColumn_Handler,
 		},
 		{
 			MethodName: "DeleteColumn",

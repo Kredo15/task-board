@@ -36,7 +36,7 @@ func (h *BoardHandler) Create(
 		return nil, mapErrorToGRPC(err)
 	}
 
-	createdBoard, err := h.createUC.Execute(ctx, &boardDTO)
+	createdBoard, err := h.createBoardUC.Execute(ctx, &boardDTO)
 	if err != nil {
 		h.log.Error("createBoard usecase error", err)
 		return nil, mapErrorToGRPC(err)
