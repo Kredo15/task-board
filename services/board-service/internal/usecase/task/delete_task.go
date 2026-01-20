@@ -23,12 +23,12 @@ func NewDeleteTaskUseCase(r board.BoardRepository, g board.IDGenerator) *DeleteT
 // Execute обрабатывает команду удаления задачи
 func (uc *DeleteTaskUseCase) Execute(ctx context.Context, req *DeleteTaskRequest) error {
 	// Преобразование запроса в доменную модель
-	taskID, err := board.NewTaskID(req.ID)
+	taskID, err := board.ParseTaskID(req.ID)
 	if err != nil {
 		return err
 	}
 
-	boardID, err := board.NewBoardID(req.BoardID)
+	boardID, err := board.ParseBoardID(req.BoardID)
 	if err != nil {
 		return err
 	}
@@ -37,11 +37,11 @@ func (uc *DeleteTaskUseCase) Execute(ctx context.Context, req *DeleteTaskRequest
 	if err != nil {
 		return err
 	}
+
+	eventID := board.EventID(uc.gen.Generate())
 	// Создаем событие удаления задачи
-	event, err := t.Delete(uc.gen)
-	if err != nil {
-		return err
-	}
+	event := t.Delete(eventID)
+
 	// Удаляем задачу из репозитория и сохраняем событие
 	err = uc.repo.DeleteTask(ctx, boardID, taskID, event)
 	if err != nil {

@@ -20,11 +20,11 @@ type MoveTaskRequest struct {
 }
 
 type UpdateTaskRequest struct {
-	ID          string `json:"id" validate:"required"`
-	Title       string `json:"title" validate:"required,min=1,max=255"`
-	Description string `json:"description,omitempty" validate:"max=1000"`
-	AssigneeID  string `json:"assignee_id" validate:"required"`
-	BoardID     string `json:"board_id" validate:"required"`
+	ID          string  `json:"id" validate:"required"`
+	Title       *string `json:"title" validate:"required,min=1,max=255"`
+	Description *string `json:"description,omitempty" validate:"max=1000"`
+	AssigneeID  *string `json:"assignee_id" validate:"required"`
+	BoardID     string  `json:"board_id" validate:"required"`
 }
 
 type DeleteTaskRequest struct {

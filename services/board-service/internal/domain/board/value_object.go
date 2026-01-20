@@ -3,6 +3,8 @@ package board
 import (
 	"strings"
 	"unicode/utf8"
+
+	"github.com/google/uuid"
 )
 
 type IDGenerator interface {
@@ -15,16 +17,20 @@ type LexorankGen interface {
 
 type BoardID string
 
-func NewBoardID(id string) (BoardID, error) {
+func ParseBoardID(id string) (BoardID, error) {
 	if id == "" {
 		return "", ErrInvalidBoardID
 	}
+	if _, err := uuid.Parse(id); err != nil {
+		return "", ErrInvalidBoardID
+	}
+
 	return BoardID(id), nil
 }
 
 type Title string
 
-func NewTitle(v string) (Title, error) {
+func ParseTitle(v string) (Title, error) {
 	v = strings.TrimSpace(v)
 	if v == "" {
 		return "", ErrInvalidBoardTitleEmpty
@@ -37,7 +43,7 @@ func NewTitle(v string) (Title, error) {
 
 type Description string
 
-func NewDescription(v string) (Description, error) {
+func ParseDescription(v string) (Description, error) {
 	v = strings.TrimSpace(v)
 	if utf8.RuneCountInString(v) > 1000 {
 		return "", ErrInvalidBoardDescriptionLong
@@ -47,7 +53,7 @@ func NewDescription(v string) (Description, error) {
 
 type OwnerID string
 
-func NewOwnerID(id string) (OwnerID, error) {
+func ParseOwnerID(id string) (OwnerID, error) {
 	if id == "" {
 		return "", ErrInvalidOwnerID
 	}
@@ -56,8 +62,11 @@ func NewOwnerID(id string) (OwnerID, error) {
 
 type ColumnID string
 
-func NewColumnID(id string) (ColumnID, error) {
+func ParseColumnID(id string) (ColumnID, error) {
 	if id == "" {
+		return "", ErrInvalidColumnID
+	}
+	if _, err := uuid.Parse(id); err != nil {
 		return "", ErrInvalidColumnID
 	}
 	return ColumnID(id), nil
@@ -65,7 +74,7 @@ func NewColumnID(id string) (ColumnID, error) {
 
 type Rank string
 
-func NewRank(r string) (Rank, error) {
+func ParseRank(r string) (Rank, error) {
 	if r == "" {
 		return "", ErrInvalidRank
 	}
@@ -74,8 +83,11 @@ func NewRank(r string) (Rank, error) {
 
 type TaskID string
 
-func NewTaskID(id string) (TaskID, error) {
+func ParseTaskID(id string) (TaskID, error) {
 	if id == "" {
+		return "", ErrInvalidTaskID
+	}
+	if _, err := uuid.Parse(id); err != nil {
 		return "", ErrInvalidTaskID
 	}
 	return TaskID(id), nil
@@ -83,9 +95,24 @@ func NewTaskID(id string) (TaskID, error) {
 
 type AssigneeID string
 
-func NewAssigneeID(id string) (AssigneeID, error) {
+func ParseAssigneeID(id string) (AssigneeID, error) {
 	if id == "" {
 		return "", ErrInvalidAssigneeID
 	}
+	if _, err := uuid.Parse(id); err != nil {
+		return "", ErrInvalidAssigneeID
+	}
 	return AssigneeID(id), nil
+}
+
+type EventID string
+
+func ParseEventID(id string) (EventID, error) {
+	if id == "" {
+		return "", ErrInvalidEventID
+	}
+	if _, err := uuid.Parse(id); err != nil {
+		return "", ErrInvalidEventID
+	}
+	return EventID(id), nil
 }

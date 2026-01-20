@@ -21,10 +21,10 @@ const (
 
 // DomainEvent — общая структура для хранения в Outbox
 type DomainEvent struct {
-	ID          string
+	ID          EventID
 	Type        string
 	AggregateID string
-	Payload     []byte
+	Payload     any
 	OccurredAt  time.Time
 }
 

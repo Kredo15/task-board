@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -47,8 +48,16 @@ func (r *BoardRepository) Create(ctx context.Context, b *board.Board, event *boa
 	if err != nil {
 		return fmt.Errorf("failed to insert board: %w", err)
 	}
+
 	// Сохраняем событие в outbox, если оно есть
 	if event != nil {
+
+		// Сериализуем полезную нагрузку события в JSON
+		payloadBytes, err := json.Marshal(event.Payload)
+		if err != nil {
+			return fmt.Errorf("failed to marshal event payload: %w", err)
+		}
+
 		const outboxQuery = `
             INSERT INTO outbox (id, aggregate_type, aggregate_id, event_type, payload, occurred_at)
             VALUES ($1, $2, $3, $4, $5, $6)`
@@ -58,7 +67,7 @@ func (r *BoardRepository) Create(ctx context.Context, b *board.Board, event *boa
 			"board",
 			b.ID(),
 			event.Type,
-			event.Payload,
+			payloadBytes,
 			event.OccurredAt,
 		)
 		if err != nil {
@@ -104,6 +113,13 @@ func (r *BoardRepository) Update(ctx context.Context, b *board.Board, event *boa
 
 	// Сохраняем событие в outbox, если оно есть
 	if event != nil {
+
+		// Сериализуем полезную нагрузку события в JSON
+		payloadBytes, err := json.Marshal(event.Payload)
+		if err != nil {
+			return fmt.Errorf("failed to marshal event payload: %w", err)
+		}
+
 		const outboxQuery = `
             INSERT INTO outbox (id, aggregate_type, aggregate_id, event_type, payload, occurred_at)
             VALUES ($1, $2, $3, $4, $5, $6)`
@@ -113,7 +129,7 @@ func (r *BoardRepository) Update(ctx context.Context, b *board.Board, event *boa
 			"board",
 			b.ID(),
 			event.Type,
-			event.Payload,
+			payloadBytes,
 			event.OccurredAt,
 		)
 		if err != nil {
@@ -151,6 +167,13 @@ func (r *BoardRepository) Delete(ctx context.Context, id board.BoardID, event *b
 
 	// Сохраняем событие в outbox, если оно есть
 	if event != nil {
+
+		// Сериализуем полезную нагрузку события в JSON
+		payloadBytes, err := json.Marshal(event.Payload)
+		if err != nil {
+			return fmt.Errorf("failed to marshal event payload: %w", err)
+		}
+
 		const outboxQuery = `
             INSERT INTO outbox (id, aggregate_type, aggregate_id, event_type, payload, occurred_at)
             VALUES ($1, $2, $3, $4, $5, $6)`
@@ -160,7 +183,7 @@ func (r *BoardRepository) Delete(ctx context.Context, id board.BoardID, event *b
 			"board",
 			string(id),
 			event.Type,
-			event.Payload,
+			payloadBytes,
 			event.OccurredAt,
 		)
 		if err != nil {

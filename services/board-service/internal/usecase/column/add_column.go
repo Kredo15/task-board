@@ -26,7 +26,7 @@ func NewAddColumnUseCase(r board.BoardRepository, g board.IDGenerator, lrank boa
 // Execute обрабатывает команду создания колонки
 func (uc *AddColumnUseCase) Execute(ctx context.Context, req *AddColumnRequest) (*ColumnResponse, error) {
 	// Валидируем columnId
-	bID, err := board.NewBoardID(req.BoardID)
+	bID, err := board.ParseBoardID(req.BoardID)
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +37,9 @@ func (uc *AddColumnUseCase) Execute(ctx context.Context, req *AddColumnRequest) 
 	}
 
 	var rank string
-	if len(ranks) > 0 {
-		rank = ranks[len(ranks)-1].Rank
+	currentCount := len(ranks)
+	if currentCount > 0 {
+		rank = ranks[currentCount-1].Rank
 	}
 	// Считаем новый rank
 	newrank, err := uc.lexorank.Between(rank, "")
@@ -46,7 +47,7 @@ func (uc *AddColumnUseCase) Execute(ctx context.Context, req *AddColumnRequest) 
 	if err != nil {
 		return nil, fmt.Errorf("calculate lexorank: %w", err)
 	}
-	boardID, err := board.NewBoardID(req.BoardID)
+	boardID, err := board.ParseBoardID(req.BoardID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +57,21 @@ func (uc *AddColumnUseCase) Execute(ctx context.Context, req *AddColumnRequest) 
 		return nil, fmt.Errorf("get board: %w", err)
 	}
 
-	column, event, err := b.AddColumn(uc.gen, req.Title, newrank)
+	title, err := board.ParseTitle(req.Title)
+	if err != nil {
+		return nil, err
+	}
+
+	toRank, err := board.ParseRank(newrank)
+	if err != nil {
+		return nil, err
+	}
+
+	// Генерируем ID для новой колонки и события
+	columnID := board.ColumnID(uc.gen.Generate())
+	eventID := board.EventID(uc.gen.Generate())
+
+	column, event, err := b.AddColumn(columnID, currentCount, title, toRank, eventID)
 	if err != nil {
 		return nil, err
 	}

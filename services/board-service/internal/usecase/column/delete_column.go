@@ -24,11 +24,11 @@ func NewDeleteTaskUseCase(r board.BoardRepository, gen board.IDGenerator) *Delet
 // Execute обрабатывает команду удаления задачи
 func (uc *DeleteColumnUseCase) Execute(ctx context.Context, req *DeleteColumnRequest) error {
 	// Преобразование запроса в доменную модель
-	columnID, err := board.NewColumnID(req.ID)
+	columnID, err := board.ParseColumnID(req.ID)
 	if err != nil {
 		return err
 	}
-	boardID, err := board.NewBoardID(req.BoardID)
+	boardID, err := board.ParseBoardID(req.BoardID)
 	if err != nil {
 		return err
 	}
@@ -37,11 +37,10 @@ func (uc *DeleteColumnUseCase) Execute(ctx context.Context, req *DeleteColumnReq
 	if err != nil {
 		return fmt.Errorf("failed to get column: %w", err)
 	}
+
+	eventID := board.EventID(uc.gen.Generate())
 	// Создаем событие удаления колонки
-	event, err := c.Delete(uc.gen)
-	if err != nil {
-		return fmt.Errorf("failed to event delete board: %w", err)
-	}
+	event := c.Delete(eventID)
 
 	err = uc.repo.DeleteColumn(ctx, boardID, columnID, event)
 	if err != nil {

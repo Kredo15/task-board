@@ -7,17 +7,17 @@ import (
 	"github.com/Kredo15/task-board/services/board-service/internal/domain/board"
 )
 
-// CreateTaskUseCase представляет обработчик команды создания доски
-type CreateTaskUseCase struct {
+// AddTaskUseCase представляет обработчик команды создания задачи
+type AddTaskUseCase struct {
 	repo     board.BoardRepository
 	gen      board.IDGenerator
 	lexorank board.LexorankGen
 }
 
-// NewCreateBoardHandler создает новый экземпляр обработчика команды создания доски
-func NewCreateTaskUseCase(r board.BoardRepository, g board.IDGenerator, lrank board.LexorankGen) *CreateTaskUseCase {
+// NewAddTaskUseCase создает новый экземпляр обработчика команды создания задачи
+func NewAddTaskUseCase(r board.BoardRepository, g board.IDGenerator, lrank board.LexorankGen) *AddTaskUseCase {
 
-	return &CreateTaskUseCase{
+	return &AddTaskUseCase{
 		repo:     r,
 		gen:      g,
 		lexorank: lrank,
@@ -25,13 +25,16 @@ func NewCreateTaskUseCase(r board.BoardRepository, g board.IDGenerator, lrank bo
 }
 
 // Execute обрабатывает команду создания задачи
-func (uc *CreateTaskUseCase) Execute(ctx context.Context, req *CreateTaskRequest) (*TaskResponse, error) {
+func (uc *AddTaskUseCase) Execute(ctx context.Context, req *CreateTaskRequest) (*TaskResponse, error) {
 	// Валидируем columnId
-	colID, err := board.NewColumnID(req.ColumnID)
+	colID, err := board.ParseColumnID(req.ColumnID)
 	if err != nil {
 		return nil, err
 	}
-	boardID, err := board.NewBoardID(req.BoardID)
+	boardID, err := board.ParseBoardID(req.BoardID)
+	if err != nil {
+		return nil, err
+	}
 	// Получаем max rank для вставки новой задачи в конец
 	ranks, err := uc.repo.GetTaskRanks(ctx, boardID, colID)
 	if err != nil {
@@ -54,15 +57,31 @@ func (uc *CreateTaskUseCase) Execute(ctx context.Context, req *CreateTaskRequest
 		return nil, fmt.Errorf("get board: %w", err)
 	}
 
-	task, event, err := b.AddTask(
-		uc.gen,
-		currentCount,
-		req.ColumnID,
-		req.Title,
-		req.Description,
-		newrank,
-		req.AssigneeID,
-	)
+	toRank, err := board.ParseRank(newrank)
+	if err != nil {
+		return nil, err
+	}
+
+	title, err := board.ParseTitle(req.Title)
+	if err != nil {
+		return nil, err
+	}
+
+	description, err := board.ParseDescription(req.Description)
+	if err != nil {
+		return nil, err
+	}
+
+	assigneeID, err := board.ParseAssigneeID(req.AssigneeID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Генерируем ID для новой задачи и события
+	taskID := board.TaskID(uc.gen.Generate())
+	eventID := board.EventID(uc.gen.Generate())
+
+	task, event, err := b.AddTask(taskID, currentCount, colID, title, description, toRank, assigneeID, eventID)
 
 	if err != nil {
 		return nil, err

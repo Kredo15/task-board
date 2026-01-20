@@ -18,7 +18,7 @@ func NewGetBoardUseCase(r board.BoardRepository) *GetBoardUseCase {
 
 func (h *GetBoardUseCase) Execute(ctx context.Context, cmd *GetBoardRequest) (*BoardResponse, error) {
 	// Преобразование запроса в доменную модель
-	boardID, err := board.NewBoardID(cmd.ID)
+	boardID, err := board.ParseBoardID(cmd.ID)
 	if err != nil {
 		return nil, err
 	}

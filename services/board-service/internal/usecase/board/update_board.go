@@ -19,8 +19,8 @@ func NewUpdateBoardUseCase(r board.BoardRepository, gen board.IDGenerator) *Upda
 }
 
 func (uc *UpdateBoardUseCase) Execute(ctx context.Context, req *UpdateBoardRequest) (*BoardResponse, error) {
-	// Преобразование запроса в доменную модель
-	boardID, err := board.NewBoardID(req.ID)
+	// Парсим и валидируем ID доски
+	boardID, err := board.ParseBoardID(req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -29,8 +29,28 @@ func (uc *UpdateBoardUseCase) Execute(ctx context.Context, req *UpdateBoardReque
 	if err != nil {
 		return nil, err
 	}
+
+	var titleToUpdate *board.Title
+	if req.Title != nil {
+		t, err := board.ParseTitle(*req.Title)
+		if err != nil {
+			return nil, err
+		}
+		titleToUpdate = &t
+	}
+
+	var descToUpdate *board.Description
+	if req.Description != nil {
+		d, err := board.ParseDescription(*req.Description)
+		if err != nil {
+			return nil, err
+		}
+		descToUpdate = &d
+	}
+
+	eventID := board.EventID(uc.gen.Generate())
 	// Обновляем доску и генерируем событие
-	event, err := b.Update(uc.gen, req.Title, req.Description)
+	event, err := b.Update(titleToUpdate, descToUpdate, eventID)
 	if err != nil {
 		return nil, err
 	}

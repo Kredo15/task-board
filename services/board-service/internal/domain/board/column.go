@@ -1,7 +1,6 @@
 package board
 
 import (
-	"encoding/json"
 	"time"
 )
 
@@ -15,32 +14,19 @@ type Column struct {
 	updatedAt time.Time
 }
 
-func NewColumn(gen IDGenerator, boardRaw, titleRaw, rankRaw string) (*Column, error) {
-	boardID, err := NewBoardID(boardRaw)
-	if err != nil {
-		return nil, err
-	}
-	// Валидируем Title
-	title, err := NewTitle(titleRaw)
-	if err != nil {
-		return nil, err
-	}
-	// Валидируем Rank
-	r, err := NewRank(rankRaw)
-	if err != nil {
-		return nil, err
-	}
+func NewColumn(id ColumnID, boardID BoardID, title Title, rank Rank) *Column {
 
-	board := &Column{
-		id:        ColumnID(gen.Generate()),
+	column := &Column{
+		id:        id,
 		boardID:   boardID,
 		title:     title,
-		rank:      r,
+		rank:      rank,
+		tasks:     []*Task{},
 		createdAt: time.Now(),
 		updatedAt: time.Now(),
 	}
 
-	return board, nil
+	return column
 }
 
 func RestoreColumn(
@@ -49,22 +35,22 @@ func RestoreColumn(
 	tasks []*Task,
 ) (*Column, error) {
 	// Валидируем ID
-	id, err := NewColumnID(idIn)
+	id, err := ParseColumnID(idIn)
 	if err != nil {
 		return nil, err
 	}
 	// Валидируем BoardID
-	boardID, err := NewBoardID(bID)
+	boardID, err := ParseBoardID(bID)
 	if err != nil {
 		return nil, err
 	}
 	// Валидируем Title
-	title, err := NewTitle(titleIn)
+	title, err := ParseTitle(titleIn)
 	if err != nil {
 		return nil, err
 	}
 	// Валидируем Rank
-	r, err := NewRank(rIn)
+	r, err := ParseRank(rIn)
 	if err != nil {
 		return nil, err
 	}
@@ -88,38 +74,29 @@ func (c *Column) Tasks() []*Task       { return c.tasks }
 func (c *Column) CreatedAt() time.Time { return c.createdAt }
 func (c *Column) UpdatedAt() time.Time { return c.updatedAt }
 
-func (c *Column) Update(gen IDGenerator, newTitleRaw string) (*DomainEvent, error) {
-	newTitle, err := NewTitle(newTitleRaw)
-	if err != nil {
-		return nil, err
-	}
-	c.title = newTitle
+func (c *Column) Update(title Title, eventID EventID) *DomainEvent {
+
+	c.title = title
 	c.updatedAt = time.Now()
 
 	// Создаем Payload
 	payload := ColumnUpdatedPayload{
 		ColumnID: c.ID(),
 		BoardID:  c.BoardID(),
-		NewTitle: newTitleRaw,
-	}
-
-	// Сериализуем Payload
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
+		NewTitle: string(c.title),
 	}
 
 	return &DomainEvent{
-		ID:          gen.Generate(),
+		ID:          eventID,
 		Type:        EventTypeColumnUpdated,
 		AggregateID: c.BoardID(),
-		Payload:     data,
+		Payload:     payload,
 		OccurredAt:  time.Now(),
-	}, nil
+	}
 }
 
 // Move изменяет позицию (Rank) колонки
-func (c *Column) Move(gen IDGenerator, newRank Rank, boardID BoardID) (*DomainEvent, error) {
+func (c *Column) Move(newRank Rank, boardID BoardID, eventID EventID) *DomainEvent {
 	c.rank = newRank
 	c.updatedAt = time.Now()
 
@@ -129,42 +106,34 @@ func (c *Column) Move(gen IDGenerator, newRank Rank, boardID BoardID) (*DomainEv
 		BoardID:  c.BoardID(),
 		NewRank:  c.Rank(),
 	}
-	// Сериализуем Payload
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
+
 	// Возвращаем событие
 	return &DomainEvent{
-		ID:          gen.Generate(), // ID самого события
+		ID:          eventID, // ID самого события
 		Type:        EventTypeColumnMoved,
 		AggregateID: c.BoardID(),
-		Payload:     data,
+		Payload:     payload,
 		OccurredAt:  c.updatedAt,
-	}, nil
+	}
 }
 
 func (c *Column) SetTasks(tasks []*Task) {
 	c.tasks = tasks
 }
 
-func (c *Column) Delete(gen IDGenerator) (*DomainEvent, error) {
+func (c *Column) Delete(eventID EventID) *DomainEvent {
 	// Создаем Payload
 	payload := ColumnDeletedPayload{
 		ColumnID: c.ID(),
 		BoardID:  c.BoardID(),
 	}
-	// Сериализуем Payload
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
+
 	// Создаем событие
 	return &DomainEvent{
-		ID:          gen.Generate(),
+		ID:          eventID,
 		Type:        EventTypeColumnDeleted,
 		AggregateID: c.BoardID(),
-		Payload:     data,
+		Payload:     payload,
 		OccurredAt:  time.Now(),
-	}, nil
+	}
 }

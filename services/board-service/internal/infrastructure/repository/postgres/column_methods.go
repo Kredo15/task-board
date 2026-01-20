@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/Kredo15/task-board/services/board-service/internal/domain/board"
@@ -38,6 +39,12 @@ func (r *BoardRepository) SaveColumn(ctx context.Context, boardID board.BoardID,
 		return fmt.Errorf("failed to save column: %w", err)
 	}
 
+	// Сериализуем полезную нагрузку события в JSON
+	payloadBytes, err := json.Marshal(event.Payload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal event payload: %w", err)
+	}
+
 	// Сохраняем событие в outbox, если оно есть
 	if event != nil {
 		const outboxQuery = `
@@ -49,7 +56,7 @@ func (r *BoardRepository) SaveColumn(ctx context.Context, boardID board.BoardID,
 			"board",
 			string(boardID),
 			event.Type,
-			event.Payload,
+			payloadBytes,
 			event.OccurredAt,
 		)
 		if err != nil {
@@ -120,6 +127,12 @@ func (r *BoardRepository) DeleteColumn(
 		return board.ErrColumnNotFound
 	}
 
+	// Сериализуем полезную нагрузку события в JSON
+	payloadBytes, err := json.Marshal(event.Payload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal event payload: %w", err)
+	}
+
 	// Сохраняем событие в outbox, если оно есть
 	if event != nil {
 		const outboxQuery = `
@@ -131,7 +144,7 @@ func (r *BoardRepository) DeleteColumn(
 			"board",
 			string(boardID),
 			event.Type,
-			event.Payload,
+			payloadBytes,
 			event.OccurredAt,
 		)
 		if err != nil {

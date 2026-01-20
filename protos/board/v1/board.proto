@@ -11,7 +11,7 @@ message Task {
   string column_id = 2;
   string title = 3;
   string description = 4;
-  int32 position = 5;
+  string rank = 5;
   string assignee_id = 6;
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp updated_at = 8;
@@ -21,7 +21,7 @@ message Column {
   string id = 1;
   string board_id = 2;
   string title = 3;
-  int32 position = 4;
+  string rank = 4;
   repeated Task tasks = 5;
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;

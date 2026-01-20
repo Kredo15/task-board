@@ -28,7 +28,7 @@ type Task struct {
 	ColumnId      string                 `protobuf:"bytes,2,opt,name=column_id,json=columnId,proto3" json:"column_id,omitempty"`
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	Position      int32                  `protobuf:"varint,5,opt,name=position,proto3" json:"position,omitempty"`
+	Rank          string                 `protobuf:"bytes,5,opt,name=rank,proto3" json:"rank,omitempty"`
 	AssigneeId    string                 `protobuf:"bytes,6,opt,name=assignee_id,json=assigneeId,proto3" json:"assignee_id,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
@@ -94,11 +94,11 @@ func (x *Task) GetDescription() string {
 	return ""
 }
 
-func (x *Task) GetPosition() int32 {
+func (x *Task) GetRank() string {
 	if x != nil {
-		return x.Position
+		return x.Rank
 	}
-	return 0
+	return ""
 }
 
 func (x *Task) GetAssigneeId() string {
@@ -127,7 +127,7 @@ type Column struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	BoardId       string                 `protobuf:"bytes,2,opt,name=board_id,json=boardId,proto3" json:"board_id,omitempty"`
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	Position      int32                  `protobuf:"varint,4,opt,name=position,proto3" json:"position,omitempty"`
+	Rank          string                 `protobuf:"bytes,4,opt,name=rank,proto3" json:"rank,omitempty"`
 	Tasks         []*Task                `protobuf:"bytes,5,rep,name=tasks,proto3" json:"tasks,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
@@ -186,11 +186,11 @@ func (x *Column) GetTitle() string {
 	return ""
 }
 
-func (x *Column) GetPosition() int32 {
+func (x *Column) GetRank() string {
 	if x != nil {
-		return x.Position
+		return x.Rank
 	}
-	return 0
+	return ""
 }
 
 func (x *Column) GetTasks() []*Task {
@@ -414,24 +414,24 @@ var File_board_proto protoreflect.FileDescriptor
 
 const file_board_proto_rawDesc = "" +
 	"\n" +
-	"\vboard.proto\x12\bboard.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9e\x02\n" +
+	"\vboard.proto\x12\bboard.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x96\x02\n" +
 	"\x04Task\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tcolumn_id\x18\x02 \x01(\tR\bcolumnId\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x1a\n" +
-	"\bposition\x18\x05 \x01(\x05R\bposition\x12\x1f\n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x12\n" +
+	"\x04rank\x18\x05 \x01(\tR\x04rank\x12\x1f\n" +
 	"\vassignee_id\x18\x06 \x01(\tR\n" +
 	"assigneeId\x129\n" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x81\x02\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xf9\x01\n" +
 	"\x06Column\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bboard_id\x18\x02 \x01(\tR\aboardId\x12\x14\n" +
-	"\x05title\x18\x03 \x01(\tR\x05title\x12\x1a\n" +
-	"\bposition\x18\x04 \x01(\x05R\bposition\x12$\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x12\n" +
+	"\x04rank\x18\x04 \x01(\tR\x04rank\x12$\n" +
 	"\x05tasks\x18\x05 \x03(\v2\x0e.board.v1.TaskR\x05tasks\x129\n" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +

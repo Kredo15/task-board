@@ -9,12 +9,14 @@ var (
 	ErrInvalidBoardDescriptionLong = errors.New("board description is too long")
 	ErrInvalidOwnerID              = errors.New("board ownerID is required")
 	ErrBoardNotFound               = errors.New("board not found")
+	ErrInvalidEventID              = errors.New("event ID is required")
 
 	ErrInvalidColumnID         = errors.New("column ID is required")
 	ErrInvalidColumnTitleEmpty = errors.New("column title cannot be empty")
 	ErrInvalidColumnTitleLong  = errors.New("column title is too long")
 	ErrInvalidRank             = errors.New("invalid rank")
 	ErrColumnNotFound          = errors.New("column not found")
+	ErrLimitColumnReached      = errors.New("column limit reached for the board")
 
 	ErrInvalidTaskID             = errors.New("task ID is required")
 	ErrInvalidTaskTitleEmpty     = errors.New("task title cannot be empty")

@@ -2,7 +2,6 @@ package task
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Kredo15/task-board/services/board-service/internal/domain/board"
 )
@@ -23,11 +22,11 @@ func NewMoveTaskUseCase(r board.BoardRepository, g board.IDGenerator, l board.Le
 
 func (uc *MoveTaskUseCase) Execute(ctx context.Context, req *MoveTaskRequest) (*TaskResponse, error) {
 	// Валидируем columnId
-	toColumnID, err := board.NewColumnID(req.ColumnID)
+	toColumnID, err := board.ParseColumnID(req.ColumnID)
 	if err != nil {
 		return nil, err
 	}
-	boardID, err := board.NewBoardID(req.BoardID)
+	boardID, err := board.ParseBoardID(req.BoardID)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +45,7 @@ func (uc *MoveTaskUseCase) Execute(ctx context.Context, req *MoveTaskRequest) (*
 		return nil, err
 	}
 	// Валидируем taskId
-	task_id, err := board.NewTaskID(req.ID)
+	task_id, err := board.ParseTaskID(req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,15 +55,17 @@ func (uc *MoveTaskUseCase) Execute(ctx context.Context, req *MoveTaskRequest) (*
 		return nil, err
 	}
 	// Валидируем rank
-	toRank, err := board.NewRank(newrank)
+	toRank, err := board.ParseRank(newrank)
 	if err != nil {
 		return nil, err
 	}
+
+	// Генерируем ID события
+	eventID := board.EventID(uc.gen.Generate())
+
 	// Обновляем позицию и колонку, получаем событие
-	event, err := t.Move(uc.gen, toColumnID, toRank)
-	if err != nil {
-		return nil, fmt.Errorf("domain task move: %w", err)
-	}
+	event := t.Move(toColumnID, toRank, eventID)
+
 	// Обновляем сущность Task в репозитории и сохраняем событие
 	err_update := uc.repo.SaveTask(ctx, boardID, t, event)
 	if err_update != nil {

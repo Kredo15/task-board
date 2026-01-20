@@ -2,7 +2,6 @@ package column
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Kredo15/task-board/services/board-service/internal/domain/board"
 )
@@ -23,12 +22,12 @@ func NewMoveColumnUseCase(r board.BoardRepository, g board.IDGenerator, l board.
 
 func (uc *MoveColumnUseCase) Execute(ctx context.Context, req *MoveColumnRequest) (*ColumnResponse, error) {
 	// Валидируем boardId
-	boardID, err := board.NewBoardID(req.BoardID)
+	boardID, err := board.ParseBoardID(req.BoardID)
 	if err != nil {
 		return nil, err
 	}
 	// Валидируем columnId
-	columnID, err := board.NewColumnID(req.ID)
+	columnID, err := board.ParseColumnID(req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -50,15 +49,17 @@ func (uc *MoveColumnUseCase) Execute(ctx context.Context, req *MoveColumnRequest
 		return nil, err
 	}
 	// Валидируем rank
-	toRank, err := board.NewRank(newrank)
+	toRank, err := board.ParseRank(newrank)
 	if err != nil {
 		return nil, err
 	}
+
+	// Генерируем ID события
+	eventID := board.EventID(uc.gen.Generate())
+
 	// Обновляем позицию и колонку
-	event, err := c.Move(uc.gen, toRank, boardID)
-	if err != nil {
-		return nil, fmt.Errorf("domain column move: %w", err)
-	}
+	event := c.Move(toRank, boardID, eventID)
+
 	// Обновляем сущность и сохраняем событие
 	err_update := uc.repo.SaveColumn(ctx, boardID, c, event)
 	if err_update != nil {

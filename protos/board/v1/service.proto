@@ -66,8 +66,8 @@ message UpdateColumnResponse {
 
 message MoveColumnRequest {
   string column_id = 1;
-  string after_column_id = 3;
-  string before_column_id = 4;
+  optional string after_column_id = 3;
+  optional string before_column_id = 4;
 }
 
 message MoveColumnResponse {
@@ -105,8 +105,8 @@ message UpdateTaskResponse {
 message MoveTaskRequest {
   string task_id = 1;
   string to_column_id = 2;
-  string after_task_id = 3;
-  string before_task_id = 4;
+  optional string after_task_id = 3;
+  optional string before_task_id = 4;
 }
 
 message MoveTaskResponse {
@@ -118,21 +118,37 @@ message DeleteTaskRequest {
 }
 
 message DeleteTaskResponse {}
-
+// BoardService определяет службу gRPC для управления досками, колонками и задачами.
 service BoardService {
+    // Методы для управления досками
+    // Метод для создания доски
     rpc CreateBoard(CreateBoardRequest) returns (CreateBoardResponse);
+    // Метод для получения списка досок
     rpc ListBoards(ListBoardsRequest) returns (ListBoardsResponse);
+    // Метод для получения доски с колонками и задачами по ID
     rpc GetBoard(GetBoardRequest) returns (GetBoardResponse);
+    // Метод для обновления доски
     rpc UpdateBoard(UpdateBoardRequest) returns (UpdateBoardResponse);
+    // Метод для удаления доски
     rpc DeleteBoard(DeleteBoardRequest) returns (DeleteBoardResponse);
 
+    // Методы для управления колонками
+    // Метод для создания колонки
     rpc CreateColumn(CreateColumnRequest) returns (CreateColumnResponse);
+    // Метод для обновления колонки
     rpc UpdateColumn(UpdateColumnRequest) returns (UpdateColumnResponse);
+    // Метод для перемещения колонки
     rpc MoveColumn(MoveColumnRequest) returns (MoveColumnResponse);
+    // Метод для удаления колонки
     rpc DeleteColumn(DeleteColumnRequest) returns (DeleteColumnResponse);
 
+    // Методы для управления задачами
+    // Метод для создания задачи
     rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
+    // Метод для обновления задачи
     rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse);
+    // Метод для перемещения задачи
     rpc MoveTask(MoveTaskRequest) returns (MoveTaskResponse);
+    // Метод для удаления задачи
     rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse);
 }

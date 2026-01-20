@@ -37,19 +37,37 @@ const (
 // BoardServiceClient is the client API for BoardService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// BoardService определяет службу gRPC для управления досками, колонками и задачами.
 type BoardServiceClient interface {
+	// Методы для управления досками
+	// Метод для создания доски
 	CreateBoard(ctx context.Context, in *CreateBoardRequest, opts ...grpc.CallOption) (*CreateBoardResponse, error)
+	// Метод для получения списка досок
 	ListBoards(ctx context.Context, in *ListBoardsRequest, opts ...grpc.CallOption) (*ListBoardsResponse, error)
+	// Метод для получения доски по ID
 	GetBoard(ctx context.Context, in *GetBoardRequest, opts ...grpc.CallOption) (*GetBoardResponse, error)
+	// Метод для обновления доски
 	UpdateBoard(ctx context.Context, in *UpdateBoardRequest, opts ...grpc.CallOption) (*UpdateBoardResponse, error)
+	// Метод для удаления доски
 	DeleteBoard(ctx context.Context, in *DeleteBoardRequest, opts ...grpc.CallOption) (*DeleteBoardResponse, error)
+	// Методы для управления колонками
+	// Метод для создания колонки
 	CreateColumn(ctx context.Context, in *CreateColumnRequest, opts ...grpc.CallOption) (*CreateColumnResponse, error)
+	// Метод для обновления колонки
 	UpdateColumn(ctx context.Context, in *UpdateColumnRequest, opts ...grpc.CallOption) (*UpdateColumnResponse, error)
+	// Метод для перемещения колонки
 	MoveColumn(ctx context.Context, in *MoveColumnRequest, opts ...grpc.CallOption) (*MoveColumnResponse, error)
+	// Метод для удаления колонки
 	DeleteColumn(ctx context.Context, in *DeleteColumnRequest, opts ...grpc.CallOption) (*DeleteColumnResponse, error)
+	// Методы для управления задачами
+	// Метод для создания задачи
 	CreateTask(ctx context.Context, in *CreateTaskRequest, opts ...grpc.CallOption) (*CreateTaskResponse, error)
+	// Метод для обновления задачи
 	UpdateTask(ctx context.Context, in *UpdateTaskRequest, opts ...grpc.CallOption) (*UpdateTaskResponse, error)
+	// Метод для перемещения задачи
 	MoveTask(ctx context.Context, in *MoveTaskRequest, opts ...grpc.CallOption) (*MoveTaskResponse, error)
+	// Метод для удаления задачи
 	DeleteTask(ctx context.Context, in *DeleteTaskRequest, opts ...grpc.CallOption) (*DeleteTaskResponse, error)
 }
 
@@ -194,19 +212,37 @@ func (c *boardServiceClient) DeleteTask(ctx context.Context, in *DeleteTaskReque
 // BoardServiceServer is the server API for BoardService service.
 // All implementations must embed UnimplementedBoardServiceServer
 // for forward compatibility.
+//
+// BoardService определяет службу gRPC для управления досками, колонками и задачами.
 type BoardServiceServer interface {
+	// Методы для управления досками
+	// Метод для создания доски
 	CreateBoard(context.Context, *CreateBoardRequest) (*CreateBoardResponse, error)
+	// Метод для получения списка досок
 	ListBoards(context.Context, *ListBoardsRequest) (*ListBoardsResponse, error)
+	// Метод для получения доски по ID
 	GetBoard(context.Context, *GetBoardRequest) (*GetBoardResponse, error)
+	// Метод для обновления доски
 	UpdateBoard(context.Context, *UpdateBoardRequest) (*UpdateBoardResponse, error)
+	// Метод для удаления доски
 	DeleteBoard(context.Context, *DeleteBoardRequest) (*DeleteBoardResponse, error)
+	// Методы для управления колонками
+	// Метод для создания колонки
 	CreateColumn(context.Context, *CreateColumnRequest) (*CreateColumnResponse, error)
+	// Метод для обновления колонки
 	UpdateColumn(context.Context, *UpdateColumnRequest) (*UpdateColumnResponse, error)
+	// Метод для перемещения колонки
 	MoveColumn(context.Context, *MoveColumnRequest) (*MoveColumnResponse, error)
+	// Метод для удаления колонки
 	DeleteColumn(context.Context, *DeleteColumnRequest) (*DeleteColumnResponse, error)
+	// Методы для управления задачами
+	// Метод для создания задачи
 	CreateTask(context.Context, *CreateTaskRequest) (*CreateTaskResponse, error)
+	// Метод для обновления задачи
 	UpdateTask(context.Context, *UpdateTaskRequest) (*UpdateTaskResponse, error)
+	// Метод для перемещения задачи
 	MoveTask(context.Context, *MoveTaskRequest) (*MoveTaskResponse, error)
+	// Метод для удаления задачи
 	DeleteTask(context.Context, *DeleteTaskRequest) (*DeleteTaskResponse, error)
 	mustEmbedUnimplementedBoardServiceServer()
 }

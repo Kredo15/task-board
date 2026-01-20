@@ -6,16 +6,16 @@ import (
 	"github.com/Kredo15/task-board/services/board-service/internal/usecase/task"
 )
 
-type cachedCreateTaskUseCase struct {
-	next  task.CreateTaskUseCase
+type cachedAddTaskUseCase struct {
+	next  task.AddTaskUseCase
 	cache Invalidator
 }
 
-func NewCachedCreateTaskUseCase(next task.CreateTaskUseCase, cache BoardCache) *cachedCreateTaskUseCase {
-	return &cachedCreateTaskUseCase{next: next, cache: cache}
+func NewCachedAddTaskUseCase(next task.AddTaskUseCase, cache BoardCache) *cachedAddTaskUseCase {
+	return &cachedAddTaskUseCase{next: next, cache: cache}
 }
 
-func (c *cachedCreateTaskUseCase) Execute(ctx context.Context, cmd *task.CreateTaskRequest) (*task.TaskResponse, error) {
+func (c *cachedAddTaskUseCase) Execute(ctx context.Context, cmd *task.CreateTaskRequest) (*task.TaskResponse, error) {
 	// Сначала выполняем основной сценарий создания задачи
 	task, err := c.next.Execute(ctx, cmd)
 	if err != nil {

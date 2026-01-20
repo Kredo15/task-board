@@ -19,9 +19,9 @@ func NewDeleteBoardUseCase(r board.BoardRepository, gen board.IDGenerator) *Dele
 	}
 }
 
-func (uc *DeleteBoardUseCase) Execute(ctx context.Context, cmd *DeleteBoardRequest) error {
+func (uc *DeleteBoardUseCase) Execute(ctx context.Context, req *DeleteBoardRequest) error {
 	// Преобразование запроса в доменную модель
-	boardID, err := board.NewBoardID(cmd.ID)
+	boardID, err := board.ParseBoardID(req.ID)
 	if err != nil {
 		return err
 	}
@@ -30,11 +30,9 @@ func (uc *DeleteBoardUseCase) Execute(ctx context.Context, cmd *DeleteBoardReque
 	if err != nil {
 		return fmt.Errorf("failed to get board: %w", err)
 	}
+	eventID := board.EventID(uc.gen.Generate())
 	// Создаем событие удаления доски
-	event, err := b.Delete(uc.gen)
-	if err != nil {
-		return fmt.Errorf("failed to event delete board: %w", err)
-	}
+	event := b.Delete(eventID)
 	// Удаляем доску из репозитория
 	err = uc.repo.Delete(ctx, boardID, event)
 	if err != nil {

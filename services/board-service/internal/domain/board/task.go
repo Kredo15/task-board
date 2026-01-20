@@ -1,7 +1,6 @@
 package board
 
 import (
-	"encoding/json"
 	"time"
 )
 
@@ -18,104 +17,63 @@ type Task struct {
 }
 
 func NewTask(
-	gen IDGenerator, boardIDIn, colIDIn, titleRaw, descRaw, rankRaw, assigneeIDRaw string,
-) (*Task, *DomainEvent, error) {
-	boardID, err := NewBoardID(boardIDIn)
-	if err != nil {
-		return nil, nil, err
-	}
-	colID, err := NewColumnID(colIDIn)
-	if err != nil {
-		return nil, nil, err
-	}
-	// Валидируем Title
-	title, err := NewTitle(titleRaw)
-	if err != nil {
-		return nil, nil, err
-	}
-	// Валидируем Description
-	desc, err := NewDescription(descRaw)
-	if err != nil {
-		return nil, nil, err
-	}
-	// Валидируем Rank
-	r, err := NewRank(rankRaw)
-	if err != nil {
-		return nil, nil, err
-	}
-	// Валидируем AssigneeID
-	assignee_id, err := NewAssigneeID(assigneeIDRaw)
-	if err != nil {
-		return nil, nil, err
-	}
+	taskID TaskID,
+	boardID BoardID,
+	colID ColumnID,
+	title Title,
+	desc Description,
+	rank Rank,
+	assignee_id AssigneeID,
+) *Task {
+
 	task := &Task{
-		id:          TaskID(gen.Generate()),
+		id:          taskID,
 		boardID:     boardID,
 		columnID:    colID,
 		title:       title,
 		description: desc,
-		rank:        r,
+		rank:        rank,
 		assigneeID:  assignee_id,
 		createdAt:   time.Now(),
 		updatedAt:   time.Now(),
 	}
-	// Создаем Payload
-	payload := TaskCreatedPayload{
-		TaskID:     task.ID(),
-		ColumnID:   task.ColumnID(),
-		Title:      task.Title(),
-		Rank:       task.Rank(),
-		AssigneeID: task.AssigneeID(),
-	}
-	// Сериализуем Payload
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return nil, nil, err
-	}
-	// Возвращаем задачу и событие
-	event := &DomainEvent{
-		ID:          gen.Generate(), // ID самого события
-		Type:        EventTypeTaskCreated,
-		AggregateID: task.BoardID(),
-		Payload:     data,
-		OccurredAt:  task.CreatedAt(),
-	}
-	return task, event, nil
+
+	return task
 }
 
 func RestoreTask(
 	idIn, boardIDIn, colIDIn, titleIn, descIn, rIn, assigneeIDIn string,
 	createdAt, updatedAt time.Time,
 ) (*Task, error) {
-	id, err := NewTaskID(idIn)
+	id, err := ParseTaskID(idIn)
 	if err != nil {
 		return nil, err
 	}
-	boardID, err := NewBoardID(boardIDIn)
+	boardID, err := ParseBoardID(boardIDIn)
 	if err != nil {
 		return nil, err
 	}
-	colID, err := NewColumnID(colIDIn)
+	colID, err := ParseColumnID(colIDIn)
 	if err != nil {
 		return nil, err
 	}
 	// Валидируем Title
-	title, err := NewTitle(titleIn)
+	title, err := ParseTitle(titleIn)
 	if err != nil {
 		return nil, err
 	}
 	// Валидируем Description
-	desc, err := NewDescription(descIn)
+	desc, err := ParseDescription(descIn)
 	if err != nil {
 		return nil, err
 	}
 	// Валидируем Rank
-	r, err := NewRank(rIn)
+	r, err := ParseRank(rIn)
 	if err != nil {
 		return nil, err
 	}
 	// Валидируем AssigneeID
-	assignee_id, err := NewAssigneeID(assigneeIDIn)
+	assignee_id, err := ParseAssigneeID(assigneeIDIn)
 	if err != nil {
 		return nil, err
 	}
@@ -143,26 +101,30 @@ func (t *Task) AssigneeID() string   { return string(t.assigneeID) }
 func (t *Task) CreatedAt() time.Time { return t.createdAt }
 func (t *Task) UpdatedAt() time.Time { return t.updatedAt }
 
-func (t *Task) Update(
-	gen IDGenerator,
-	newTitleRaw, newDescRaw, newAssigneeIDRaw string,
-) (*DomainEvent, error) {
-	newTitle, err := NewTitle(newTitleRaw)
-	if err != nil {
-		return nil, err
-	}
-	newDesc, err := NewDescription(newDescRaw)
-	if err != nil {
-		return nil, err
-	}
-	newAssigneeID, err := NewAssigneeID(newAssigneeIDRaw)
-	if err != nil {
-		return nil, err
+func (t *Task) Update(title *Title, desc *Description, assigneeID *AssigneeID, eventID EventID) *DomainEvent {
+	var payloadTitle *string
+	var payloadDesc *string
+	var payloadAssigneeID *string
+	// Обновляем заголовок, если он передан
+	if title != nil {
+		t.title = *title
+		s := string(*title)
+		payloadTitle = &s
 	}
 
-	t.title = newTitle
-	t.description = newDesc
-	t.assigneeID = newAssigneeID
+	// Обновляем описание, если оно передано
+	if desc != nil {
+		t.description = *desc
+		s := string(*desc)
+		payloadDesc = &s
+	}
+	// Обновляем исполнителя, если он передан
+	if assigneeID != nil {
+		t.assigneeID = *assigneeID
+		s := string(*assigneeID)
+		payloadAssigneeID = &s
+	}
+
 	t.updatedAt = time.Now()
 
 	// Создаем Payload
@@ -170,26 +132,22 @@ func (t *Task) Update(
 		TaskID:      t.ID(),
 		ColumnID:    t.ColumnID(),
 		BoardID:     t.BoardID(),
-		Title:       &newTitleRaw,
-		Description: &newDescRaw,
-		AssigneeID:  &newAssigneeIDRaw,
+		Title:       payloadTitle,
+		Description: payloadDesc,
+		AssigneeID:  payloadAssigneeID,
 	}
-	// Сериализуем Payload
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
+
 	// Возвращаем событие
 	return &DomainEvent{
-		ID:          gen.Generate(), // ID самого события
+		ID:          eventID, // ID самого события
 		Type:        EventTypeTaskUpdated,
 		AggregateID: t.BoardID(),
-		Payload:     data,
+		Payload:     payload,
 		OccurredAt:  t.updatedAt,
-	}, nil
+	}
 }
 
-func (t *Task) Move(gen IDGenerator, toColumnID ColumnID, newRank Rank) (*DomainEvent, error) {
+func (t *Task) Move(toColumnID ColumnID, newRank Rank, eventID EventID) *DomainEvent {
 	oldColID := t.columnID
 	t.columnID = toColumnID
 	t.rank = newRank
@@ -205,40 +163,30 @@ func (t *Task) Move(gen IDGenerator, toColumnID ColumnID, newRank Rank) (*Domain
 		NewRank:      t.Rank(),
 	}
 
-	// Сериализуем Payload
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
 	// Возвращаем событие
 	return &DomainEvent{
-		ID:          gen.Generate(), // ID самого события
+		ID:          eventID, // ID самого события
 		Type:        EventTypeTaskMoved,
 		AggregateID: t.BoardID(),
-		Payload:     data,
+		Payload:     payload,
 		OccurredAt:  t.updatedAt,
-	}, nil
+	}
 }
 
-func (t *Task) Delete(gen IDGenerator) (*DomainEvent, error) {
+func (t *Task) Delete(eventID EventID) *DomainEvent {
 	// Создаем Payload
 	payload := TaskDeletedPayload{
 		TaskID:   t.ID(),
 		ColumnID: t.ColumnID(),
 		BoardID:  t.BoardID(),
 	}
-	// Сериализуем Payload
-	data, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
+
 	// Создаем событие
 	return &DomainEvent{
-		ID:          gen.Generate(),
+		ID:          eventID,
 		Type:        EventTypeTaskDeleted,
 		AggregateID: t.BoardID(),
-		Payload:     data,
+		Payload:     payload,
 		OccurredAt:  time.Now(),
-	}, nil
+	}
 }

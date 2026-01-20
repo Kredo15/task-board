@@ -6,7 +6,6 @@ import (
 	"google.golang.org/grpc"
 
 	boardv1 "github.com/Kredo15/task-board/protos/gen/go/board/v1"
-	handler "github.com/Kredo15/task-board/services/board-service/internal/transport/grpc/handler"
 	"github.com/Kredo15/task-board/services/board-service/pkg/logger"
 	"github.com/Kredo15/task-board/services/board-service/pkg/validator"
 )
@@ -18,18 +17,10 @@ type Server struct {
 	log      logger.Logger
 }
 
-func NewServer(
-	addr string,
-	boardceratedUC handler.CreateBoard,
-	boardgetUC handler.GetBoard,
-	valid *validator.Validator,
-	log logger.Logger,
-) *Server {
+func NewServer(addr string, handler *Handler) *Server {
 	serv := grpc.NewServer()
 
-	boardHandler := handler.NewBoardHandler(boardceratedUC, boardgetUC, valid, log)
-
-	boardv1.RegisterBoardServiceServer(serv, boardHandler)
+	boardv1.RegisterBoardServiceServer(serv, handler)
 
 	return &Server{
 		grpcServ: serv,

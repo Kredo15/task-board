@@ -21,21 +21,30 @@ func NewCreateBoardUseCase(r board.BoardRepository, g board.IDGenerator) *Create
 }
 
 // Execute обрабатывает команду создания доски
-func (h *CreateBoardUseCase) Execute(ctx context.Context, cmd *CreateBoardRequest) (*BoardResponse, error) {
-	// Преобразование запроса в доменную модель
-	newBoard, event, err := board.NewBoard(
-		h.gen,
-		cmd.Title,
-		cmd.Description,
-		cmd.OwnerID,
-	)
+func (uc *CreateBoardUseCase) Execute(ctx context.Context, req *CreateBoardRequest) (*BoardResponse, error) {
+	title, err := board.ParseTitle(req.Title)
+	if err != nil {
+		return nil, err // Возвращаем ошибку домена (например, ErrInvalidBoardTitleEmpty)
+	}
 
+	desc, err := board.ParseDescription(req.Description)
 	if err != nil {
 		return nil, err
 	}
 
+	owner, err := board.ParseOwnerID(req.OwnerID)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Только когда всё валидно, генерируем ID и создаем домен
+	boardID := board.BoardID(uc.gen.Generate())
+	eventID := board.EventID(uc.gen.Generate())
+
+	newBoard, event := board.NewBoard(boardID, title, desc, owner, eventID)
+
 	// Сохраненяем доску в репозитории и сохраняем событие
-	if err := h.repo.Create(ctx, newBoard, event); err != nil {
+	if err := uc.repo.Create(ctx, newBoard, event); err != nil {
 		return nil, err
 	}
 

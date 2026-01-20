@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -47,8 +48,15 @@ func (r *BoardRepository) SaveTask(
 	if err != nil {
 		return fmt.Errorf("failed to save task: %w", err)
 	}
+
 	// Сохраняем событие в outbox, если оно есть
 	if event != nil {
+		// Сериализуем полезную нагрузку события в JSON
+		payloadBytes, err := json.Marshal(event.Payload)
+		if err != nil {
+			return fmt.Errorf("failed to marshal event payload: %w", err)
+		}
+
 		const outboxQuery = `
 			INSERT INTO outbox (id, aggregate_type, aggregate_id, event_type, payload, occurred_at)
 			VALUES ($1, $2, $3, $4, $5, $6)`
@@ -57,7 +65,7 @@ func (r *BoardRepository) SaveTask(
 			"board",
 			string(boardID),
 			event.Type,
-			event.Payload,
+			payloadBytes,
 			event.OccurredAt,
 		)
 		if err != nil {
@@ -144,6 +152,12 @@ func (r *BoardRepository) DeleteTask(
 	}
 	// Сохраняем событие в outbox, если оно есть
 	if event != nil {
+		// Сериализуем полезную нагрузку события в JSON
+		payloadBytes, err := json.Marshal(event.Payload)
+		if err != nil {
+			return fmt.Errorf("failed to marshal event payload: %w", err)
+		}
+
 		const outboxQuery = `
 			INSERT INTO outbox (id, aggregate_type, aggregate_id, event_type, payload, occurred_at)
 			VALUES ($1, $2, $3, $4, $5, $6)`
@@ -152,7 +166,7 @@ func (r *BoardRepository) DeleteTask(
 			"board",
 			string(boardID),
 			event.Type,
-			event.Payload,
+			payloadBytes,
 			event.OccurredAt,
 		)
 		if err != nil {
