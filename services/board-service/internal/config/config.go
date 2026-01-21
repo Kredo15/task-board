@@ -47,10 +47,11 @@ func (p *PostgresConfig) GetDSN() string {
 }
 
 type RedisConfig struct {
-	Host     string `yaml:"Host"`
-	Port     int    `yaml:"Port"`
-	Password string `yaml:"Password"`
-	DB       int    `yaml:"DB"`
+	Host     string        `yaml:"Host"`
+	Port     int           `yaml:"Port"`
+	Password string        `yaml:"Password"`
+	DB       int           `yaml:"DB"`
+	TTL      time.Duration `yaml:"TTL"`
 }
 
 type LoggingConfig struct {

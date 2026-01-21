@@ -7,21 +7,21 @@ import (
 )
 
 type cachedMoveColumnUseCase struct {
-	next  column.MoveColumnUseCase
+	next  column.MoveColumn
 	cache Invalidator
 }
 
-func NewCachedMoveColumnUseCase(next column.MoveColumnUseCase, cache BoardCache) *cachedMoveColumnUseCase {
+func NewCachedMoveColumnUseCase(next column.MoveColumn, cache BoardCache) *cachedMoveColumnUseCase {
 	return &cachedMoveColumnUseCase{next: next, cache: cache}
 }
 
-func (c *cachedMoveColumnUseCase) Execute(ctx context.Context, cmd *column.MoveColumnRequest) (*column.ColumnResponse, error) {
+func (c *cachedMoveColumnUseCase) Execute(ctx context.Context, req *column.MoveColumnRequest) (*column.ColumnResponse, error) {
 	// Сначала выполняем основной сценарий перемещения колонки
-	column, err := c.next.Execute(ctx, cmd)
+	column, err := c.next.Execute(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	// сбрасываем кэш
-	_ = c.cache.Invalidate(ctx, cmd.BoardID)
+	_ = c.cache.Invalidate(ctx, req.BoardID)
 	return column, nil
 }

@@ -24,3 +24,4 @@ redis:
   Port: 6379
   Password: ""
   DB: 0
+  TTL: 30

@@ -7,21 +7,21 @@ import (
 )
 
 type cachedUpdateColumnUseCase struct {
-	next  column.UpdateColumnUseCase
+	next  column.UpdateColumn
 	cache Invalidator
 }
 
-func NewCachedUpdateColumnUseCase(next column.UpdateColumnUseCase, cache BoardCache) *cachedUpdateColumnUseCase {
+func NewCachedUpdateColumnUseCase(next column.UpdateColumn, cache BoardCache) *cachedUpdateColumnUseCase {
 	return &cachedUpdateColumnUseCase{next: next, cache: cache}
 }
 
-func (c *cachedUpdateColumnUseCase) Execute(ctx context.Context, cmd *column.UpdateColumnRequest) (*column.ColumnResponse, error) {
+func (c *cachedUpdateColumnUseCase) Execute(ctx context.Context, req *column.UpdateColumnRequest) (*column.ColumnResponse, error) {
 	// Сначала выполняем основной сценарий обновления колонки
-	column, err := c.next.Execute(ctx, cmd)
+	column, err := c.next.Execute(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	// сбрасываем кэш
-	_ = c.cache.Invalidate(ctx, cmd.BoardID)
+	_ = c.cache.Invalidate(ctx, req.BoardID)
 	return column, nil
 }

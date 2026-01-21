@@ -10,7 +10,7 @@ import (
 	"github.com/Kredo15/task-board/services/board-service/internal/config"
 )
 
-func NewRedisClient(cfg config.Config) (*redis.Client, error) {
+func NewRedisClient(cfg *config.Config) (*redis.Client, error) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port),
 		Password: cfg.Redis.Password,

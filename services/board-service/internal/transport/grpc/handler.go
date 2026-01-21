@@ -6,28 +6,27 @@ import (
 	"github.com/Kredo15/task-board/services/board-service/internal/usecase/column"
 	"github.com/Kredo15/task-board/services/board-service/internal/usecase/task"
 	"github.com/Kredo15/task-board/services/board-service/pkg/logger"
-	"github.com/Kredo15/task-board/services/board-service/pkg/validator"
 )
 
 type BoardUseCases struct {
-	Create *board.CreateBoardUseCase
-	Update *board.UpdateBoardUseCase
-	Get    *board.GetBoardUseCase
-	Delete *board.DeleteBoardUseCase
+	Create board.CreateBoard
+	Update board.UpdateBoard
+	Get    board.GetBoard
+	Delete board.DeleteBoard
 }
 
 type ColumnUseCases struct {
-	Create *column.AddColumnUseCase
-	Update *column.UpdateColumnUseCase
-	Move   *column.MoveColumnUseCase
-	Delete *column.DeleteColumnUseCase
+	Create column.AddColumn
+	Update column.UpdateColumn
+	Move   column.MoveColumn
+	Delete column.DeleteColumn
 }
 
 type TaskUseCases struct {
-	Create *task.AddTaskUseCase
-	Update *task.UpdateTaskUseCase
-	Move   *task.MoveTaskUseCase
-	Delete *task.DeleteTaskUseCase
+	Create task.AddTask
+	Update task.UpdateTask
+	Move   task.MoveTask
+	Delete task.DeleteTask
 }
 
 // Deps — структура для внедрения зависимостей
@@ -39,19 +38,17 @@ type Deps struct {
 
 type Handler struct {
 	boardv1.UnimplementedBoardServiceServer
-	board    BoardUseCases
-	column   ColumnUseCases
-	task     TaskUseCases
-	validate *validator.Validator
-	log      logger.Logger
+	board  BoardUseCases
+	column ColumnUseCases
+	task   TaskUseCases
+	log    logger.Logger
 }
 
-func NewHandler(d Deps, validate *validator.Validator, log logger.Logger) *Handler {
+func NewHandler(d Deps, log logger.Logger) *Handler {
 	return &Handler{
-		board:    d.Board,
-		column:   d.Column,
-		task:     d.Task,
-		validate: validate,
-		log:      log,
+		board:  d.Board,
+		column: d.Column,
+		task:   d.Task,
+		log:    log,
 	}
 }

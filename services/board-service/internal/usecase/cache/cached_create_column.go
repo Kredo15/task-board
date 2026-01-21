@@ -7,22 +7,22 @@ import (
 )
 
 type cachedCreateColumnUseCase struct {
-	next  column.AddColumnUseCase
+	next  column.AddColumn
 	cache Invalidator
 }
 
-func NewCachedCreateColumnUseCase(next column.AddColumnUseCase, cache Invalidator) *cachedCreateColumnUseCase {
+func NewCachedCreateColumnUseCase(next column.AddColumn, cache Invalidator) *cachedCreateColumnUseCase {
 	return &cachedCreateColumnUseCase{next: next, cache: cache}
 }
 
-func (c *cachedCreateColumnUseCase) Execute(ctx context.Context, cmd *column.AddColumnRequest) (*column.ColumnResponse, error) {
+func (c *cachedCreateColumnUseCase) Execute(ctx context.Context, req *column.AddColumnRequest) (*column.ColumnResponse, error) {
 	// Сначала выполняем основной сценарий создания колонки
-	resp, err := c.next.Execute(ctx, cmd)
+	resp, err := c.next.Execute(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	// сбрасываем кэш
-	_ = c.cache.Invalidate(ctx, cmd.BoardID)
+	_ = c.cache.Invalidate(ctx, req.BoardID)
 
 	return resp, nil
 }

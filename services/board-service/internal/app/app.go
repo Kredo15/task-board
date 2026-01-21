@@ -9,12 +9,17 @@ import (
 	"github.com/Kredo15/task-board/services/board-service/internal/config"
 	"github.com/Kredo15/task-board/services/board-service/internal/infrastructure/repository/postgres"
 	db "github.com/Kredo15/task-board/services/board-service/pkg/db/postgres"
+	"github.com/Kredo15/task-board/services/board-service/pkg/db/redis"
+	"github.com/Kredo15/task-board/services/board-service/pkg/lexorank"
 	loggerPkg "github.com/Kredo15/task-board/services/board-service/pkg/logger"
 	"github.com/Kredo15/task-board/services/board-service/pkg/uuid"
-	"github.com/Kredo15/task-board/services/board-service/pkg/validator"
 
+	cacheRepo "github.com/Kredo15/task-board/services/board-service/internal/infrastructure/cache/redis"
 	"github.com/Kredo15/task-board/services/board-service/internal/transport/grpc"
-	usecase "github.com/Kredo15/task-board/services/board-service/internal/usecase/board"
+	usecaseBoard "github.com/Kredo15/task-board/services/board-service/internal/usecase/board"
+	usecaseCache "github.com/Kredo15/task-board/services/board-service/internal/usecase/cache"
+	usecaseColumn "github.com/Kredo15/task-board/services/board-service/internal/usecase/column"
+	usecaseTask "github.com/Kredo15/task-board/services/board-service/internal/usecase/task"
 )
 
 func Run() error {
@@ -27,8 +32,7 @@ func Run() error {
 	log := loggerPkg.NewLogger(cfg.Logging.Level)
 
 	genID := uuid.NewGenerator()
-
-	valid := validator.NewValidator()
+	lexorankGen := lexorank.NewLexorankGen()
 
 	db, err := db.NewClient(cfg)
 	if err != nil {
@@ -37,11 +41,82 @@ func Run() error {
 	}
 	defer db.Close()
 
+	redisClient, err := redis.NewRedisClient(cfg)
+	if err != nil {
+		log.Fatal("fatal to connect redis %w", err)
+		return fmt.Errorf("fatal to connect redis %w", err)
+	}
+	defer redisClient.Close()
+
 	boardRepo := postgres.NewBoardRepository(db.GetPool())
 
-	boardUC := usecase.NewCreateBoardUseCase(boardRepo, genID)
+	// usecase Board
+	boardCreateUC := usecaseBoard.NewCreateBoardUseCase(boardRepo, genID)
+	boardGetUC := usecaseBoard.NewGetBoardUseCase(boardRepo)
+	boardUpdateUC := usecaseBoard.NewUpdateBoardUseCase(boardRepo, genID)
+	boardDeleteUC := usecaseBoard.NewDeleteBoardUseCase(boardRepo, genID)
 
-	srv := grpc.NewServer(cfg.GRPC.Address(), boardUC, &valid, log)
+	// usecase Column
+	columnAddUc := usecaseColumn.NewAddColumnUseCase(boardRepo, genID, lexorankGen)
+	columnUpdateUC := usecaseColumn.NewUpdateColumnUseCase(boardRepo, genID)
+	columnMoveUC := usecaseColumn.NewMoveColumnUseCase(boardRepo, genID, lexorankGen)
+	columnDeleteUC := usecaseColumn.NewDeleteTaskUseCase(boardRepo, genID)
+
+	// usecase Task
+	taskAddUC := usecaseTask.NewAddTaskUseCase(boardRepo, genID, lexorankGen)
+	taskUpdataUC := usecaseTask.NewUpdateTaskUseCase(boardRepo, genID)
+	taskMoveUC := usecaseTask.NewMoveTaskUseCase(boardRepo, genID, lexorankGen)
+	taskDeleteUC := usecaseTask.NewDeleteTaskUseCase(boardRepo, genID)
+
+	boardCache := cacheRepo.NewBoardCache(redisClient, cfg.Redis.TTL)
+
+	// Для кэширования применяем паттерн Decorator
+	//usecase cache board
+	cacheBoardUpdateUC := usecaseCache.NewCachedUpdateBoardUseCase(boardUpdateUC, boardCache)
+	cacheBoardGetUC := usecaseCache.NewCachedGetBoardUseCase(boardGetUC, boardCache)
+	cacheBoardDeleteUC := usecaseCache.NewCachedDeleteBoardUseCase(boardDeleteUC, boardCache)
+	// usecase cache column
+	cacheColumnAddUC := usecaseCache.NewCachedCreateColumnUseCase(columnAddUc, boardCache)
+	cacheColumnUpdateUC := usecaseCache.NewCachedUpdateColumnUseCase(columnUpdateUC, boardCache)
+	cacheColumnMoveUC := usecaseCache.NewCachedMoveColumnUseCase(columnMoveUC, boardCache)
+	cacheColumnDeleteUC := usecaseCache.NewCachedDeleteColumnUseCase(columnDeleteUC, boardCache)
+	// usecaaw cache task
+	cacheTaskAddUC := usecaseCache.NewCachedAddTaskUseCase(taskAddUC, boardCache)
+	cacheTaskUpdateUC := usecaseCache.NewCachedUpdateTaskUseCase(taskUpdataUC, boardCache)
+	cacheTaskMoveUC := usecaseCache.NewCachedMoveTaskUseCase(taskMoveUC, boardCache)
+	cacheTaskDeleUC := usecaseCache.NewCachedDeleteTaskUseCase(taskDeleteUC, boardCache)
+
+	boardUC := grpc.BoardUseCases{
+		Create: boardCreateUC,
+		Update: cacheBoardUpdateUC,
+		Get:    cacheBoardGetUC,
+		Delete: cacheBoardDeleteUC,
+	}
+
+	columnUC := grpc.ColumnUseCases{
+		Create: cacheColumnAddUC,
+		Update: cacheColumnUpdateUC,
+		Move:   cacheColumnMoveUC,
+		Delete: cacheColumnDeleteUC,
+	}
+
+	taskUC := grpc.TaskUseCases{
+		Create: cacheTaskAddUC,
+		Update: cacheTaskUpdateUC,
+		Move:   cacheTaskMoveUC,
+		Delete: cacheTaskDeleUC,
+	}
+
+	handler := grpc.NewHandler(
+		grpc.Deps{
+			Board:  boardUC,
+			Column: columnUC,
+			Task:   taskUC,
+		},
+		log,
+	)
+
+	srv := grpc.NewServer(cfg.GRPC.Address(), handler, log)
 	// Запуск сервера в отдельной горутине
 	go func() {
 		log.Info("Starting gRPC server on %s", cfg.GRPC.Address())

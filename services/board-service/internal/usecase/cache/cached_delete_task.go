@@ -7,21 +7,21 @@ import (
 )
 
 type cachedDeleteTaskUseCase struct {
-	next  task.DeleteTaskUseCase
+	next  task.DeleteTask
 	cache Invalidator
 }
 
-func NewCachedDeleteTaskUseCase(next task.DeleteTaskUseCase, cache BoardCache) *cachedDeleteTaskUseCase {
+func NewCachedDeleteTaskUseCase(next task.DeleteTask, cache BoardCache) *cachedDeleteTaskUseCase {
 	return &cachedDeleteTaskUseCase{next: next, cache: cache}
 }
 
-func (c *cachedDeleteTaskUseCase) Execute(ctx context.Context, cmd *task.DeleteTaskRequest) error {
+func (c *cachedDeleteTaskUseCase) Execute(ctx context.Context, req *task.DeleteTaskRequest) error {
 	// Сначала выполняем основной сценарий удаления задачи
-	err := c.next.Execute(ctx, cmd)
+	err := c.next.Execute(ctx, req)
 	if err != nil {
 		return err
 	}
 	// сбрасываем кэш
-	_ = c.cache.Invalidate(ctx, cmd.BoardID)
+	_ = c.cache.Invalidate(ctx, req.BoardID)
 	return nil
 }

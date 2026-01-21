@@ -7,23 +7,23 @@ import (
 )
 
 type cachedGetBoardUseCase struct {
-	next  GetBoardUC
+	next  board.GetBoard
 	cache BoardCache
 }
 
-func NewCachedGetBoardUseCase(next GetBoardUC, cache BoardCache) *cachedGetBoardUseCase {
+func NewCachedGetBoardUseCase(next board.GetBoard, cache BoardCache) *cachedGetBoardUseCase {
 	return &cachedGetBoardUseCase{next: next, cache: cache}
 }
 
-func (c *cachedGetBoardUseCase) Execute(ctx context.Context, cmd *board.GetBoardRequest) (*board.BoardResponse, error) {
+func (c *cachedGetBoardUseCase) Execute(ctx context.Context, req *board.GetBoardRequest) (*board.BoardResponse, error) {
 	// Пытаемся достать из кэша по ID из команды
-	dto, err := c.cache.Get(ctx, cmd.ID)
+	dto, err := c.cache.Get(ctx, req.ID)
 	if err == nil {
 		return dto, nil
 	}
 
 	// Если нет в кэше — выполняем реальный сценарий
-	resp, err := c.next.Execute(ctx, cmd)
+	resp, err := c.next.Execute(ctx, req)
 
 	// Сохраняем результат в кэш
 	if err == nil {

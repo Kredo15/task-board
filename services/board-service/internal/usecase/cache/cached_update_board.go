@@ -7,22 +7,22 @@ import (
 )
 
 type cachedUpdateBoardUseCase struct {
-	next  UpdateBoardUC
+	next  board.UpdateBoard
 	cache Invalidator
 }
 
-func NewCachedUpdateBoardUseCase(next UpdateBoardUC, cache BoardCache) *cachedUpdateBoardUseCase {
+func NewCachedUpdateBoardUseCase(next board.UpdateBoard, cache BoardCache) *cachedUpdateBoardUseCase {
 	return &cachedUpdateBoardUseCase{next: next, cache: cache}
 }
 
-func (c *cachedUpdateBoardUseCase) Execute(ctx context.Context, cmd *board.UpdateBoardRequest) (*board.BoardResponse, error) {
+func (c *cachedUpdateBoardUseCase) Execute(ctx context.Context, req *board.UpdateBoardRequest) (*board.BoardResponse, error) {
 	// Сначала выполняем основной сценарий обновления доски
-	resp, err := c.next.Execute(ctx, cmd)
+	resp, err := c.next.Execute(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	// сбрасываем кэш
-	_ = c.cache.Invalidate(ctx, cmd.ID)
+	_ = c.cache.Invalidate(ctx, req.ID)
 
 	return resp, nil
 }

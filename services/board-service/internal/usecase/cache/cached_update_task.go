@@ -7,21 +7,21 @@ import (
 )
 
 type cachedUpdateTaskUseCase struct {
-	next  task.UpdateTaskUseCase
+	next  task.UpdateTask
 	cache Invalidator
 }
 
-func NewCachedUpdateTaskUseCase(next task.UpdateTaskUseCase, cache BoardCache) *cachedUpdateTaskUseCase {
+func NewCachedUpdateTaskUseCase(next task.UpdateTask, cache BoardCache) *cachedUpdateTaskUseCase {
 	return &cachedUpdateTaskUseCase{next: next, cache: cache}
 }
 
-func (c *cachedUpdateTaskUseCase) Execute(ctx context.Context, cmd *task.UpdateTaskRequest) (*task.TaskResponse, error) {
+func (c *cachedUpdateTaskUseCase) Execute(ctx context.Context, req *task.UpdateTaskRequest) (*task.TaskResponse, error) {
 	// Сначала выполняем основной сценарий обновления задачи
-	resp, err := c.next.Execute(ctx, cmd)
+	resp, err := c.next.Execute(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	// сбрасываем кэш
-	_ = c.cache.Invalidate(ctx, cmd.BoardID)
+	_ = c.cache.Invalidate(ctx, req.BoardID)
 	return resp, nil
 }

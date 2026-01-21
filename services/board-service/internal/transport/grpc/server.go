@@ -7,17 +7,15 @@ import (
 
 	boardv1 "github.com/Kredo15/task-board/protos/gen/go/board/v1"
 	"github.com/Kredo15/task-board/services/board-service/pkg/logger"
-	"github.com/Kredo15/task-board/services/board-service/pkg/validator"
 )
 
 type Server struct {
 	grpcServ *grpc.Server
 	address  string
-	validate *validator.Validator
 	log      logger.Logger
 }
 
-func NewServer(addr string, handler *Handler) *Server {
+func NewServer(addr string, handler *Handler, l logger.Logger) *Server {
 	serv := grpc.NewServer()
 
 	boardv1.RegisterBoardServiceServer(serv, handler)
@@ -25,6 +23,7 @@ func NewServer(addr string, handler *Handler) *Server {
 	return &Server{
 		grpcServ: serv,
 		address:  addr,
+		log:      l,
 	}
 }
 

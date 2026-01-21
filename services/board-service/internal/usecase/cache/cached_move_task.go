@@ -7,21 +7,21 @@ import (
 )
 
 type cachedMoveTaskUseCase struct {
-	next  task.MoveTaskUseCase
+	next  task.MoveTask
 	cache Invalidator
 }
 
-func NewCachedMoveTaskUseCase(next task.MoveTaskUseCase, cache BoardCache) *cachedMoveTaskUseCase {
+func NewCachedMoveTaskUseCase(next task.MoveTask, cache BoardCache) *cachedMoveTaskUseCase {
 	return &cachedMoveTaskUseCase{next: next, cache: cache}
 }
 
-func (c *cachedMoveTaskUseCase) Execute(ctx context.Context, cmd *task.MoveTaskRequest) (*task.TaskResponse, error) {
+func (c *cachedMoveTaskUseCase) Execute(ctx context.Context, req *task.MoveTaskRequest) (*task.TaskResponse, error) {
 	// Сначала выполняем основной сценарий перемещения задачи
-	resp, err := c.next.Execute(ctx, cmd)
+	resp, err := c.next.Execute(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	// сбрасываем кэш
-	_ = c.cache.Invalidate(ctx, cmd.BoardID)
+	_ = c.cache.Invalidate(ctx, req.BoardID)
 	return resp, nil
 }
